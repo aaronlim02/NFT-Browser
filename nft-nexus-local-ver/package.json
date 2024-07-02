@@ -10,7 +10,7 @@
     "install-client": "cd client && npm install",
     "install-server": "cd server && npm install",
     "install-main": "npm install",
-    "setup-python-app": "node setup-python-app.js",
+    "setup-python-env": "node setup-python-env.js",
     "install-all": "npm run install-main && npm run install-client && npm run install-server && npm run setup-python-env"
   },
   "devDependencies": {
