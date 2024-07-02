@@ -20,8 +20,8 @@ const Register = () => {
 
   return (
     <div>
-      <h1 align="center">Register</h1>
-      <form align="center" onSubmit={handleRegister}>
+      <h1 class="center">Register</h1>
+      <form class="center" onSubmit={handleRegister}>
         <div>
           <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Username" />
         </div>
