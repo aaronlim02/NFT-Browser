@@ -2,15 +2,14 @@
 const express = require('express');
 const bcryptjs = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { Pool } = require('pg');
 const cors = require('cors');
-require('dotenv').config();
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 const authenticateToken = require('./middleware/auth');
 const winston = require('winston'); 
 const { User, Setting } = require('../database/models');
 const sequelize = require('../database/sequelize');
 const sqlite3 = require('sqlite3');
-const path = require('path');
 const dbPath = path.resolve(__dirname, '../database/database.sqlite'); // Adjust path as per your setup
 
 // Create a new SQLite database connection
@@ -36,11 +35,7 @@ const app = express();
 app.use(cors()); // Enable CORS for all routes
 app.use(express.json());
 
-const pool = new Pool({
-  connectionString: "postgres://default:PVEbyHBpj65h@ep-twilight-sea-a4mpwb0v-pooler.us-east-1.aws.neon.tech:5432/verceldb?sslmode=require",
-});
-
-const jwtSecretKey = "6d4aecdc4712722d9ac57da9aaad537605979369d40a68a27539b21007aa3d42";
+const jwtSecretKey = process.env.JWT_SECRET;
 
 app.post('/register', async (req, res) => {
   const { username, password } = req.body;
