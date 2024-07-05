@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { isAuthenticated } from '../../utils/auth';
+import axios from 'axios';
 
 const Results = ({ content, interval, resultsType, status }) => {
 
@@ -11,6 +13,42 @@ const Results = ({ content, interval, resultsType, status }) => {
   const numberStyle = (num) => ({
     color: getColor(num)
   });
+
+  const handleViewSaleGraph = (collection) => {
+    alert(collection + ' sale graph');
+    return;
+  }
+
+  const handleAddToWatchlist = (collection) => {
+
+    if (!isAuthenticated()) {
+      alert(`Please login first`);
+      return;
+    } else {// Add the collection to the watchlist
+
+    alert(`Added ${collection} to watchlist`);
+    // Send a request to the backend to update the watchlist
+    axios.post('http://localhost:5000/watchlist/add_from_nft_browser', { collection })
+       .then(response => {
+         console.log('Added to watchlist:', response.data);
+       })
+       .catch(error => {
+         console.error('Error adding to watchlist:', error);
+       });
+
+    }
+  };
+
+  const handleAddToGallery = (collection) => {
+
+    if (!isAuthenticated()) {
+      alert(`Please login first`);
+    } else {
+      alert(collection + ' added to gallery');
+    }
+
+    
+  }
 
   if (status === null) {
     return (
@@ -43,7 +81,10 @@ const Results = ({ content, interval, resultsType, status }) => {
         { header: 'Market Cap', accessor: 'market-cap' },
         { header: 'No. of Sales' },
         { header: 'Volume' },
-        { header: 'Volume % Chg.' }
+        { header: 'Volume % Chg.' },
+        { header: 'View Sales Graph' },
+        { header: 'Add to Watchlist' },
+        { header: 'Add to Gallery' }
       ];
       
       var i = 0;
@@ -86,6 +127,9 @@ const Results = ({ content, interval, resultsType, status }) => {
                       {String(Math.round(row[7][i]['volume_change'] * 1000) / 10) + "%"}
                     </p>
                   </td>
+                  <td><button onClick={() => handleViewSaleGraph(row[0])}>View</button></td>
+                  <td><button onClick={() => handleAddToWatchlist(row[0])}>Add</button></td>
+                  <td><button onClick={() => handleAddToGallery(row[0])}>Add</button></td>
                 </tr>
               ))}
             </tbody>

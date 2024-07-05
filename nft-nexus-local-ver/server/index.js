@@ -125,7 +125,7 @@ app.get('/api/account', authenticateToken, async (req, res) => {
     });
     
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    res.status(500).json({ error: err.message });
   }
 });
 
@@ -162,6 +162,38 @@ app.post('/settings/personal-details', authenticateToken, async (req, res) => {
       }
     });
   } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// retrieve account name
+app.post('/watchlist/add_from_nft_browser', authenticateToken, async (req, res) => {
+  
+  const userId = req.userId; // TODO: get user id, from jwt or smth idk
+  const collection = req.collection;
+    
+    try {
+      // Check if the collection already exists
+      db.get('SELECT * FROM watchlist WHERE user_id = ? AND contract_addr = ?', [userId, collection], async (err, row) => {
+        if (err) { throw err; }
+  
+        if (row) {
+          // already exists, return "already exists"
+          // TODO:
+        } else {
+          // Preference does not exist, insert
+          db.run('INSERT INTO watchlist (user_id, contract_addr, set_price) VALUES (?, ?, ?)', [userId, collection, null], function(err) {
+            if (err) { throw err; }
+  
+            // Fetch the inserted record
+            db.get('SELECT * FROM watchlist WHERE user_id = ? AND contract_addr = ?', [userId, collection], (err, insertedRow) => {
+              if (err) { throw err; }
+              res.status(201).json(insertedRow);
+            });
+          });
+        }
+      });
+    } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
