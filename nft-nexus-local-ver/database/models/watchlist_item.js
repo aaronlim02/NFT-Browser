@@ -15,9 +15,13 @@ module.exports = (sequelize, DataTypes) => {
         key: 'id'
       }
     },
-    contract_addr: {
+    collection_slug: {
       type: DataTypes.STRING,
       allowNull: false
+    },
+    collection_name: {
+      type: DataTypes.STRING,
+      allowNull: true
     },
     set_price: {
       type: DataTypes.FLOAT,

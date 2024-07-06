@@ -166,35 +166,46 @@ app.post('/settings/personal-details', authenticateToken, async (req, res) => {
   }
 });
 
-// retrieve account name
+// add to watchlist
 app.post('/watchlist/add_from_nft_browser', authenticateToken, async (req, res) => {
-  
-  const userId = req.userId; // TODO: get user id, from jwt or smth idk
-  const collection = req.collection;
-    
-    try {
-      // Check if the collection already exists
-      db.get('SELECT * FROM watchlist WHERE user_id = ? AND contract_addr = ?', [userId, collection], async (err, row) => {
-        if (err) { throw err; }
-  
-        if (row) {
-          // already exists, return "already exists"
-          // TODO:
-        } else {
-          // Preference does not exist, insert
-          db.run('INSERT INTO watchlist (user_id, contract_addr, set_price) VALUES (?, ?, ?)', [userId, collection, null], function(err) {
-            if (err) { throw err; }
-  
-            // Fetch the inserted record
-            db.get('SELECT * FROM watchlist WHERE user_id = ? AND contract_addr = ?', [userId, collection], (err, insertedRow) => {
-              if (err) { throw err; }
-              res.status(201).json(insertedRow);
-            });
+  const userId = req.user.userId; // Assuming userId is set in the authenticateToken middleware
+  const { name, slug } = req.body; // Assuming collection is sent in the request body
+
+  if (!userId) {
+    return res.status(400).json({ error: "User ID is required. Please login first." });
+  } else if (!slug) {
+    return res.status(400).json({ error: "Must select a collection." });
+  }
+
+  try {
+    // Check if the collection already exists in the user's watchlist
+    db.get('SELECT * FROM watchlist WHERE user_id = ? AND collection_slug = ?', [userId, slug], (err, row) => {
+      if (err) {
+        throw err;
+      }
+
+      if (row) {
+        // Collection already exists, return "Conflict" status code
+        return res.status(409).json({ error: "Collection already in watchlist." });
+      } else {
+        // Collection does not exist, insert it
+        db.run('INSERT INTO watchlist (user_id, collection_slug, collection_name, set_price) VALUES (?, ?, ?, ?)', [userId, slug, name, null], function (err) {
+          if (err) {
+            throw err;
+          }
+
+          // Fetch the inserted record
+          db.get('SELECT * FROM watchlist WHERE user_id = ? AND collection_slug = ? AND collection_name = ?', [userId, slug, name], (err, insertedRow) => {
+            if (err) {
+              throw err;
+            }
+            return res.status(201).json(insertedRow);
           });
-        }
-      });
-    } catch (err) {
-    res.status(500).json({ error: err.message });
+        });
+      }
+    });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
   }
 });
 

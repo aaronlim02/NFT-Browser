@@ -17,9 +17,13 @@ module.exports = {
           key: 'id'
         }
       },
-      contract_addr: {
+      collection_slug: {
         type: Sequelize.STRING,
         allowNull: false
+      },
+      collection_name: {
+        type: Sequelize.STRING,
+        allowNull: true
       },
       set_price: {
         type: Sequelize.FLOAT,

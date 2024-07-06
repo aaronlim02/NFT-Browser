@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { isAuthenticated } from '../../utils/auth';
+import { getToken, isAuthenticated } from '../../utils/auth';
 import axios from 'axios';
 
 const Results = ({ content, interval, resultsType, status }) => {
@@ -14,27 +14,32 @@ const Results = ({ content, interval, resultsType, status }) => {
     color: getColor(num)
   });
 
-  const handleViewSaleGraph = (collection) => {
-    alert(collection + ' sale graph');
+  const handleViewSaleGraph = (name, slug) => {
+    alert(name + ' sale graph');
     return;
   }
 
-  const handleAddToWatchlist = (collection) => {
+  const handleAddToWatchlist = (name, slug) => {
 
     if (!isAuthenticated()) {
       alert(`Please login first`);
       return;
     } else {// Add the collection to the watchlist
-
-    alert(`Added ${collection} to watchlist`);
-    // Send a request to the backend to update the watchlist
-    axios.post('http://localhost:5000/watchlist/add_from_nft_browser', { collection })
-       .then(response => {
-         console.log('Added to watchlist:', response.data);
-       })
-       .catch(error => {
-         console.error('Error adding to watchlist:', error);
-       });
+      
+      const token = getToken(); // retrieve token
+      
+      // Send a request to the backend to update the watchlist
+      axios.post('http://localhost:5000/watchlist/add_from_nft_browser', 
+        { name, slug },
+        { headers: { Authorization: `Bearer ${token}` }})
+        .then(response => {
+          console.log('Added to watchlist:', response.data);
+          alert(`Added ${name} to watchlist`);
+        })
+        .catch(error => {
+          console.error('Error adding to watchlist:', error);
+          alert(`${error.response.data.error}`);
+        });
 
     }
   };
@@ -127,9 +132,9 @@ const Results = ({ content, interval, resultsType, status }) => {
                       {String(Math.round(row[7][i]['volume_change'] * 1000) / 10) + "%"}
                     </p>
                   </td>
-                  <td><button onClick={() => handleViewSaleGraph(row[0])}>View</button></td>
-                  <td><button onClick={() => handleAddToWatchlist(row[0])}>Add</button></td>
-                  <td><button onClick={() => handleAddToGallery(row[0])}>Add</button></td>
+                  <td><button onClick={() => handleViewSaleGraph(row[1])}>View</button></td>
+                  <td><button onClick={() => handleAddToWatchlist(row[0], row[1])}>Add</button></td>
+                  <td><button onClick={() => handleAddToGallery(row[0], row[1])}>Add</button></td>
                 </tr>
               ))}
             </tbody>

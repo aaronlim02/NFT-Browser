@@ -27,7 +27,7 @@ alchemy_headers = {"accept": "application/json"}
 def iterate_get_nfts(nfts_raw): # iterate getting nft out of json
     out = []
     for nft in nfts_raw:
-        collection = nft["contract"]
+        collection = nft["contract"] # contract address
         identifier = nft["identifier"]
         token_standard = nft["token_standard"]
         name = nft["name"]
