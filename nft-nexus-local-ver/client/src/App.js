@@ -26,7 +26,7 @@ function App() {
             <li><a href="/wallet-explorer">Wallet Explorer</a></li>
             <li><a href="/guides">Guides</a></li>
             <li><a href="/account">My Profile</a></li>
-            <li><AuthButton /></li> {/* Use the new AuthButton component */} {/* change to login button */}
+            <li><AuthButton /></li>
           </ul>
         </nav>
       </header>

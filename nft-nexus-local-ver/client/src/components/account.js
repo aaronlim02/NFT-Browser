@@ -5,8 +5,9 @@
   import "./account.css"
   import Dashboard from './account/dashboard';
   import Owned_NFTs from './account/owned-nfts';
-  import Favourites from './account/favourites';
+  import Galleries from './account/galleries';
   import Settings from './account/settings';
+  import Watchlist from './account/watchlist';
 
   const Account = () => {
     const [user, setUser] = useState(null);
@@ -45,8 +46,10 @@
           return <Dashboard walletAddress={address} />;
         case 'owned-nfts':
           return <Owned_NFTs walletAddress={address} />;
-        case 'favourites':
-          return <Favourites />;
+        case 'watchlist':
+          return <Watchlist />
+        case 'galleries':
+          return <Galleries />;
         case 'settings':
           return <Settings />;
         default:
@@ -63,7 +66,8 @@
           </div>
           <button class='account-buttons' onClick={() => setContent('dashboard')}>Account Dashboard</button>
           <button class='account-buttons' onClick={() => setContent('owned-nfts')}>Owned NFTs</button>
-          <button class='account-buttons' onClick={() => setContent('favourites')}>Favourites</button>
+          <button class='account-buttons' onClick={() => setContent('watchlist')}>Watchlist</button>
+          <button class='account-buttons' onClick={() => setContent('galleries')}>Galleries</button>
           <button class='account-buttons' onClick={() => setContent('settings')}>Settings</button>
         </div>
         <div class="content">

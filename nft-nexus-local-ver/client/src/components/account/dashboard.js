@@ -6,7 +6,7 @@ const Dashboard = (walletAddress) => {
   const [output, setOutput] = useState({});
   const fetchDataCalledRef = useRef(false); // Ref to prevent duplicate fetching
 
-  const handleProcessData = useCallback(async () => {
+  const handleProcessData = async () => {
     try {
       const data = { walletAddress };
       const response = await walletStats(data);
@@ -14,7 +14,7 @@ const Dashboard = (walletAddress) => {
     } catch (error) {
       console.error('Error fetching account data:', error);
     }
-  }, [walletAddress])
+  }
 
   useEffect(() => {
     // Function to fetch data from the API

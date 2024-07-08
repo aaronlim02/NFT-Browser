@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 import { getToken, isAuthenticated } from '../../../utils/auth';
 
 const PersonalDetails = () => {
 
   const [yourWalletAddress, setYourWalletAddress] = useState('');
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -21,6 +23,7 @@ const PersonalDetails = () => {
         { headers: { Authorization: `Bearer ${token}` }}
       );  
       alert('Update successful');
+      window.location.reload();
     } catch (error) {
       if (error.response) {
         // The request was made and the server responded with a status code
