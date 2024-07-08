@@ -66,3 +66,7 @@ main {
   background-color: rgb(149, 0, 0);
 }
 
+.overlay {
+  position: absolute;
+  top: 50%;
+}

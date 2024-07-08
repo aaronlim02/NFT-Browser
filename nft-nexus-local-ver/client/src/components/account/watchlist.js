@@ -38,6 +38,7 @@ const Watchlist = () => {
           watchlistData={watchlistData} 
           error={error} 
           isLoading={isLoading}
+          setWatchlistData={setWatchlistData}
         />
       </div>
     </main>
