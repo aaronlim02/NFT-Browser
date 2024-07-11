@@ -30,7 +30,7 @@ const Notifications = ({ notificationData, error, isLoading, setNotificationData
       <h2>Notifications</h2>
       <div className="notification-sub-header">
         <p>{notificationData.length} items</p>
-        <button className="delete">Delete All</button>
+        <button className="delete">Delete All (to-do)</button>
       </div>
       
       <table className="notification-table">

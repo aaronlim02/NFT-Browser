@@ -8,8 +8,10 @@ import os
 from dotenv import load_dotenv
 import sqlite3
 import datetime
+from flask_socketio import SocketIO, emit
 
 app = Flask(__name__)
+socketio = SocketIO(app)
 CORS(app)
 load_dotenv()
 
@@ -325,6 +327,14 @@ def notify_user(user_id, collection_slug, collection_name, floor_price):
 
     print(f"Notify user {user_id}: {collection_name} floor price dropped to {floor_price}")
 
+    # Emit WebSocket message for new notification
+    socketio.emit('floor-price-notification', {
+        'user_id': user_id,
+        'collection_slug': collection_slug,
+        'collection_name': collection_name,
+        'floor_price': floor_price
+    })
+
 scheduler = BackgroundScheduler()
 scheduler.add_job(func=fetch_floor_prices, trigger="interval", minutes=1)
 scheduler.start()
@@ -359,4 +369,5 @@ def get_notifications(user_id):
 
 
 if __name__ == '__main__':
-    app.run(port=5001)
+    socketio.run(app, port=5001, debug=True) 
+    # starts the Flask app and enables WebSocket support through the Flask-SocketIO extension
