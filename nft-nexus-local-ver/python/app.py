@@ -2,9 +2,12 @@ from flask import Flask, request, jsonify
 import json
 from flask_cors import CORS
 import requests
+from apscheduler.schedulers.background import BackgroundScheduler
 import time
 import os
 from dotenv import load_dotenv
+import sqlite3
+import datetime
 
 app = Flask(__name__)
 CORS(app)
@@ -12,6 +15,7 @@ load_dotenv()
 
 opensea_api_key = "d7bc517c25894772ae915ef729c8a443"
 alchemy_api_key = "Fn6XgY7SlhdqnbN09xv5QFenmRxaK0Ej"
+database_url = r"../database/database.sqlite"
 
 delay = 0.4
 
@@ -265,6 +269,81 @@ def load_wallet():
         'output': int(raw_data["result"], 16) / 10**18
     }
     return jsonify(processed_data)
+
+# notification feature
+
+def fetch_floor_prices():
+    try:
+        conn = sqlite3.connect(database_url)
+        cursor = conn.cursor()
+
+        cursor.execute('SELECT * FROM watchlist')
+        collections = cursor.fetchall()
+
+        for collection in collections:
+            collection_slug = collection[2]
+            collection_name = collection[3]
+            set_price = collection[4]
+
+            url = f'https://api.opensea.io/api/v2/collections/{collection_slug}/stats'
+            response = requests.get(url, headers=opensea_headers)
+            response_data = response.json()
+            floor_price = float(response_data['total']['floor_price'])
+
+            if floor_price < set_price:
+                notify_user(collection[1], collection_slug, collection_name, floor_price)
+
+        conn.close()
+    except Exception as e:
+        print(f"Error fetching floor prices: {e}")
+
+def notify_user(user_id, collection_slug, collection_name, floor_price):
+    conn = sqlite3.connect(database_url)
+    cursor = conn.cursor()
+
+    # Check if the notification already exists
+    cursor.execute('SELECT * FROM notifications WHERE user_id = ? AND collection_slug = ?', (user_id, collection_slug))
+    notification = cursor.fetchone()
+
+    if notification:
+        # Update the existing notification, only floor_price and updatedAt is updated
+        cursor.execute('UPDATE notifications SET floor_price = ?, updatedAt = ? WHERE user_id = ? AND collection_slug = ?',
+                       (floor_price, datetime.now(), user_id, collection_slug))
+    else:
+        # Insert a new notification
+        cursor.execute('INSERT INTO notifications (user_id, collection_slug, collection_name, floor_price, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?)',
+                       (user_id, collection_slug, collection_name, floor_price, datetime.now(), datetime.now()))
+    
+    conn.commit()
+    conn.close()
+
+    print(f"Notify user {user_id}: {collection_name} floor price dropped to {floor_price}")
+
+@app.route('/notifications', methods=['GET'])
+def get_notifications(user_id):
+    try:
+        conn = sqlite3.connect(database_url)
+        cursor = conn.cursor()
+
+        cursor.execute('SELECT * FROM notifications WHERE user_id = ?', (user_id,))
+        notifications = cursor.fetchall()
+        conn.close()
+
+        notifications_list = [
+            {
+                "id": notification[0],
+                "user_id": notification[1],
+                "collection_name": notification[3],
+                "floor_price": notification[4],
+                "createdAt": notification[5],
+                "updatedAt": notification[6]
+            }
+            for notification in notifications
+        ]
+
+        return jsonify(notifications_list)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 if __name__ == '__main__':

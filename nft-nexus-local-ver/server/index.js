@@ -259,6 +259,22 @@ app.put('/watchlist/edit', authenticateToken, (req, res) => {
   });
 });
 
+app.get('/notifications/retrieve_from_account', authenticateToken, async (req, res) => {
+  const userId = req.user.userId; // Assuming userId is set in the authenticateToken middleware
+
+  try {
+    // Fetch all items belonging to the user
+    db.all('SELECT * FROM notifications WHERE user_id = ?', [userId], (err, rows) => {
+      if (err) {
+        return res.status(500).json({ error: err.message });
+      }
+      return res.status(200).json(rows);
+    });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
 app.listen(process.env.PORT || 5000, () => {
   console.log(`Server running on port ${process.env.PORT || 5000}`);
 });
