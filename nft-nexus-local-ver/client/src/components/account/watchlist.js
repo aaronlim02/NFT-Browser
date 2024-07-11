@@ -15,46 +15,44 @@ const Watchlist = () => {
 
   const loadWatchlist = async () => {
     try {
-      setIsLoading(true); // Set loading state to true before fetching data
+      setIsLoading(true);
       const token = getToken();
       const response = await axios.get(
         'http://localhost:5000/watchlist/retrieve_from_account',
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setWatchlistData(response.data);
-      setError(null); // Reset error state after successful data fetch
+      setError(null);
     } catch (error) {
       console.error('Error fetching watchlist data:', error);
       setError('Error fetching watchlist data');
     } finally {
-      setIsLoading(false); // Set loading state to false after data fetch
+      setIsLoading(false);
     }
   };
 
   const loadNotifications = async () => {
     try {
-      setIsLoading(true); // Set loading state to true before fetching data
+      setIsLoading(true);
       const token = getToken();
       const response = await axios.get(
         'http://localhost:5000/notifications/retrieve_from_account',
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setNotificationData(response.data);
-      setError(null); // Reset error state after successful data fetch
+      setError(null);
     } catch (error) {
       console.error('Error fetching notification data:', error);
       setError('Error fetching notification data');
     } finally {
-      setIsLoading(false); // Set loading state to false after data fetch
+      setIsLoading(false);
     }
   };
 
-  // Load watchlist data on initial load
   useEffect(() => {
     loadWatchlist();
   }, []);
 
-  // Load data based on the current view
   useEffect(() => {
     if (currentView === 'watchlist') {
       loadWatchlist();
@@ -64,10 +62,6 @@ const Watchlist = () => {
   }, [currentView]);
 
   const renderContent = () => {
-    if (isLoading) {
-      return <div>Loading...</div>;
-    }
-
     if (currentView === 'watchlist') {
       return (
         <MainContent

@@ -66,6 +66,63 @@ main {
   background-color: rgb(149, 0, 0);
 }
 
+
+.notification-body {
+  flex: 1;
+  padding: 20px;
+  padding-left: 330px;
+}
+
+.notification-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.notification-table th {
+  border: 1px solid #ddd;
+  padding: 8px;
+  background-color: #f2f2f2;
+  text-align: left;
+}
+
+.notification-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+
+.notification-table tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.notification-table tr:hover {
+  background-color: #ddd;
+}
+
+.notification-table button {
+  padding: 5px 10px;
+  cursor: pointer;
+  border: none;
+  border-radius: 4px;
+}
+
+.notification-table .edit {
+  color: black;
+  background-color: rgb(210, 210, 210);
+}
+
+.notification-table .edit:hover {
+  background-color: rgb(180, 180, 180);
+}
+
+.notification-table .delete {
+  color: white;
+  background-color: rgb(199, 0, 0);
+}
+
+.notification-table .delete:hover {
+  background-color: rgb(149, 0, 0);
+}
+
 .overlay {
   position: absolute;
   top: 50%;

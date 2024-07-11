@@ -1,16 +1,13 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import { getToken } from '../../../utils/auth';
+import React from 'react';
 
 const Notifications = ({ notificationData, error, isLoading, setNotificationData }) => {
-
   if (isLoading) {
     return <div className="notification-body">Loading...</div>;
   }
 
   if (error) {
-    return <div className="notification-body">Error: {error}</div>; 
-  } 
+    return <div className="notification-body">Error: {error}</div>;
+  }
 
   return (
     <div className="notification-body">
@@ -20,7 +17,7 @@ const Notifications = ({ notificationData, error, isLoading, setNotificationData
         <thead>
           <tr>
             <th>Notification</th>
-            <th>updated</th>
+            <th>Updated</th>
           </tr>
         </thead>
         <tbody>
