@@ -275,6 +275,18 @@ app.get('/notifications/retrieve_from_account', authenticateToken, async (req, r
   }
 });
 
+app.delete('/notifications/delete', authenticateToken, (req, res) => {
+  const { id } = req.body;
+  const userId = req.user.userId;
+
+  db.run('DELETE FROM notifications WHERE id = ? AND user_id = ?', [id, userId], function(err) {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    return res.status(200).json({ success: true, id });
+  });
+});
+
 app.listen(process.env.PORT || 5000, () => {
   console.log(`Server running on port ${process.env.PORT || 5000}`);
 });

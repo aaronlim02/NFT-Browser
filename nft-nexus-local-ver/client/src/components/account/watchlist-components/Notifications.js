@@ -1,6 +1,22 @@
 import React from 'react';
+import { getToken } from '../../../utils/auth';
+import axios from 'axios';
 
 const Notifications = ({ notificationData, error, isLoading, setNotificationData }) => {
+  
+  const handleDelete = async (id) => {
+    try {
+      const token = getToken();
+      await axios.delete('http://localhost:5000/notifications/delete', {
+        data: { id: id },
+        headers: { Authorization: `Bearer ${token}` },
+      });;
+      setNotificationData((prevData) => prevData.filter((item) => item.id !== id));
+    } catch (error) {
+      console.error('Error deleting notification item:', error);
+    }
+  };
+
   if (isLoading) {
     return <div className="notification-body">Loading...</div>;
   }
@@ -12,19 +28,29 @@ const Notifications = ({ notificationData, error, isLoading, setNotificationData
   return (
     <div className="notification-body">
       <h2>Notifications</h2>
-      <p>{notificationData.length} items</p>
+      <div className="notification-sub-header">
+        <p>{notificationData.length} items</p>
+        <button className="delete">Delete All</button>
+      </div>
+      
       <table className="notification-table">
         <thead>
           <tr>
             <th>Notification</th>
-            <th>Updated</th>
+            <th>First Created</th>
+            <th>Last Updated</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
           {notificationData.map((notification) => (
             <tr key={notification.id}>
-              <td>{notification.collection_name} floor price dropped to {notification.floor_price}</td>
+              <td>{notification.collection_name} floor price dropped to {notification.floor_price} ETH</td>
+              <td>{notification.createdAt}</td>
               <td>{notification.updatedAt}</td>
+              <td>
+                <button className="delete" onClick={() => handleDelete(notification.id)}>Delete</button>
+              </td>
             </tr>
           ))}
         </tbody>

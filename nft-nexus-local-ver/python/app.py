@@ -272,6 +272,8 @@ def load_wallet():
 
 # notification feature
 
+## ping every minute for floor price < set price
+
 def fetch_floor_prices():
     try:
         conn = sqlite3.connect(database_url)
@@ -284,6 +286,9 @@ def fetch_floor_prices():
             collection_slug = collection[2]
             collection_name = collection[3]
             set_price = collection[4]
+
+            if not set_price:
+                return
 
             url = f'https://api.opensea.io/api/v2/collections/{collection_slug}/stats'
             response = requests.get(url, headers=opensea_headers)
@@ -304,20 +309,27 @@ def notify_user(user_id, collection_slug, collection_name, floor_price):
     # Check if the notification already exists
     cursor.execute('SELECT * FROM notifications WHERE user_id = ? AND collection_slug = ?', (user_id, collection_slug))
     notification = cursor.fetchone()
+    formatted_now_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
     if notification:
         # Update the existing notification, only floor_price and updatedAt is updated
         cursor.execute('UPDATE notifications SET floor_price = ?, updatedAt = ? WHERE user_id = ? AND collection_slug = ?',
-                       (floor_price, datetime.now(), user_id, collection_slug))
+                       (floor_price, formatted_now_time, user_id, collection_slug))
     else:
         # Insert a new notification
         cursor.execute('INSERT INTO notifications (user_id, collection_slug, collection_name, floor_price, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?)',
-                       (user_id, collection_slug, collection_name, floor_price, datetime.now(), datetime.now()))
+                       (user_id, collection_slug, collection_name, floor_price, formatted_now_time, formatted_now_time))
     
     conn.commit()
     conn.close()
 
     print(f"Notify user {user_id}: {collection_name} floor price dropped to {floor_price}")
+
+scheduler = BackgroundScheduler()
+scheduler.add_job(func=fetch_floor_prices, trigger="interval", minutes=1)
+scheduler.start()
+
+##
 
 @app.route('/notifications', methods=['GET'])
 def get_notifications(user_id):

@@ -70,7 +70,7 @@ const MainContent = ({ watchlistData, error, isLoading, setWatchlistData }) => {
           <tr>
             <th>Collection Name</th>
             <th>Notification Criteria</th>
-            <th>Commands</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
