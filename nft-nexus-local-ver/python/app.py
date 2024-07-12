@@ -278,7 +278,7 @@ def load_wallet():
 
 def fetch_floor_prices():
     try:
-        print("Fetching floor prices...")
+        print("Fetching start...")
         conn = sqlite3.connect(database_url, isolation_level=None)
         cursor = conn.cursor()
 

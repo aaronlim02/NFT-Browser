@@ -287,6 +287,17 @@ app.delete('/notifications/delete', authenticateToken, (req, res) => {
   });
 });
 
+app.delete('/notifications/delete-all', authenticateToken, (req, res) => {
+  const userId = req.user.userId;
+
+  db.run('DELETE FROM notifications WHERE user_id = ?', [userId], function(err) {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    return res.status(200).json({ success: true });
+  });
+});
+
 app.listen(process.env.PORT || 5000, () => {
   console.log(`Server running on port ${process.env.PORT || 5000}`);
 });

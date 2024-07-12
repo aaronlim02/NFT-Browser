@@ -92,15 +92,16 @@ const MainContent = ({ watchlistData, error, isLoading, setWatchlistData }) => {
         onRequestClose={closeModal}
         contentLabel="Edit Notification Criteria"
         className="modal"
-        overlayClassName="overlay"
+        overlayClassName="modal-overlay"
       >
         <h2>Edit Notification Criteria</h2>
+        <p>Input a value below. If collection floor price falls below this value, you will be notified.</p>
         <form onSubmit={(e) => {
           e.preventDefault();
           handleEdit();
         }}>
           <label>
-            New Price:
+            New Price (ETH):
             <input
               type="text"
               value={newPrice}
