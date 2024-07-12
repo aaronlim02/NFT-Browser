@@ -11,7 +11,7 @@ import datetime
 from flask_socketio import SocketIO, emit
 
 app = Flask(__name__)
-socketio = SocketIO(app)
+socketio = SocketIO(app, cors_allowed_origins="*")
 CORS(app)
 load_dotenv()
 
@@ -278,19 +278,24 @@ def load_wallet():
 
 def fetch_floor_prices():
     try:
-        conn = sqlite3.connect(database_url)
+        print("Fetching floor prices...")
+        conn = sqlite3.connect(database_url, isolation_level=None)
         cursor = conn.cursor()
 
         cursor.execute('SELECT * FROM watchlist')
         collections = cursor.fetchall()
+        print(f"Fetched {len(collections)} collections")
 
         for collection in collections:
+            print(collection)
+            user_id = collection[1]
             collection_slug = collection[2]
             collection_name = collection[3]
             set_price = collection[4]
 
             if not set_price:
-                return
+                print(f"{collection[3]} no set price")
+                continue
 
             url = f'https://api.opensea.io/api/v2/collections/{collection_slug}/stats'
             response = requests.get(url, headers=opensea_headers)
@@ -298,7 +303,10 @@ def fetch_floor_prices():
             floor_price = float(response_data['total']['floor_price'])
 
             if floor_price < set_price:
-                notify_user(collection[1], collection_slug, collection_name, floor_price)
+                print(f"{collection[3]} below set price")
+                notify_user(user_id, collection_slug, collection_name, floor_price)
+            else:
+                print(f"{collection[3]} at or above set price")
 
         conn.close()
     except Exception as e:
@@ -317,26 +325,25 @@ def notify_user(user_id, collection_slug, collection_name, floor_price):
         # Update the existing notification, only floor_price and updatedAt is updated
         cursor.execute('UPDATE notifications SET floor_price = ?, updatedAt = ? WHERE user_id = ? AND collection_slug = ?',
                        (floor_price, formatted_now_time, user_id, collection_slug))
+        print(f"update notification user {user_id}: {collection_name} floor price dropped to {floor_price}")
     else:
         # Insert a new notification
         cursor.execute('INSERT INTO notifications (user_id, collection_slug, collection_name, floor_price, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?)',
                        (user_id, collection_slug, collection_name, floor_price, formatted_now_time, formatted_now_time))
+        # Emit WebSocket message for new notification
+        socketio.emit('floor-price-notification', {
+            'user_id': user_id,
+            'collection_slug': collection_slug,
+            'collection_name': collection_name,
+            'floor_price': floor_price
+        })
+        print(f"Notify user {user_id}: {collection_name} floor price dropped to {floor_price}")
     
     conn.commit()
     conn.close()
 
-    print(f"Notify user {user_id}: {collection_name} floor price dropped to {floor_price}")
-
-    # Emit WebSocket message for new notification
-    socketio.emit('floor-price-notification', {
-        'user_id': user_id,
-        'collection_slug': collection_slug,
-        'collection_name': collection_name,
-        'floor_price': floor_price
-    })
-
 scheduler = BackgroundScheduler()
-scheduler.add_job(func=fetch_floor_prices, trigger="interval", minutes=1)
+scheduler.add_job(func=fetch_floor_prices, trigger="interval", minutes=1, id='floor_price_job', replace_existing=True)
 scheduler.start()
 
 ##
@@ -369,5 +376,5 @@ def get_notifications(user_id):
 
 
 if __name__ == '__main__':
-    socketio.run(app, port=5001, debug=True) 
+    socketio.run(app, port=5001, debug=False) 
     # starts the Flask app and enables WebSocket support through the Flask-SocketIO extension

@@ -12,7 +12,7 @@ import Browse from './components/Browse';
 import { isAuthenticated } from './utils/auth';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import './socket';  // Ensure this import is here to establish the WebSocket connection
+import './socket';
 
 const PrivateRoute = ({ element, ...rest }) => {
   return isAuthenticated() ? element : <Navigate to="/login" />;
