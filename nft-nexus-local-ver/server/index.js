@@ -298,6 +298,124 @@ app.delete('/notifications/delete-all', authenticateToken, (req, res) => {
   });
 });
 
+// galleries feature
+app.post('/galleries/add', authenticateToken, async (req, res) => {
+  const userId = req.user.userId; // Assuming userId is set in the authenticateToken middleware
+  const { name, description } = req.body; // Assuming collection is sent in the request body
+
+  try {
+    // Check if the gallery already exists in the user's watchlist
+    db.get('SELECT * FROM galleries WHERE name = ? AND user_id = ?', [name, userId], (err, row) => {
+      if (err) {
+        throw err;
+      }
+
+      if (row) {
+        // Collection already exists, return "Conflict" status code
+        return res.status(409).json({ error: "Gallery already exists!" });
+      } else {
+        // Collection does not exist, insert it
+        db.run('INSERT INTO galleries (user_id, name, description) VALUES (?, ?, ?)', [userId, name, description], function (err) {
+          if (err) {
+            throw err;
+          }
+
+          // Fetch the inserted record
+          db.get('SELECT * FROM galleries WHERE user_id = ? AND name = ?', [userId, name], (err, insertedRow) => {
+            if (err) {
+              throw err;
+            }
+            return res.status(201).json(insertedRow);
+          });
+        });
+      }
+    });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+app.put('/galleries/edit', authenticateToken, (req, res) => {
+  const { id, name, description } = req.body;
+  const userId = req.user.userId;
+
+  db.run('UPDATE galleries SET name = ? AND description = ? WHERE id = ? AND user_id = ?', [name, description, id, userId], function(err) {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    db.get(
+      'SELECT * FROM galleries WHERE id = ? AND user_id = ?',
+      [id, userId],
+      (err, row) => {
+        if (err) {
+          return res.status(500).json({ error: err.message });
+        }
+        return res.status(200).json(row);
+      }
+    );
+  });
+});
+
+app.delete('/galleries/delete', authenticateToken, (req, res) => {
+  const { id } = req.body;
+  const userId = req.user.userId;
+
+  db.run('DELETE FROM galleries WHERE id = ? AND user_id = ?', [id, userId], function(err) {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    return res.status(200).json({ success: true, id });
+  });
+});
+
+app.post('/gallery-items/add', authenticateToken, async (req, res) => {
+  const userId = req.user.userId; // Assuming userId is set in the authenticateToken middleware
+  const { contract_addr, token_id, collection_name } = req.body; // Assuming collection is sent in the request body
+
+  try {
+    // Check if the item already exists in the user's watchlist
+    db.get('SELECT * FROM gallery_items WHERE user_id = ? AND contract_addr = ? AND token_id = ?', [userId, contract_addr, token_id], (err, row) => {
+      if (err) {
+        throw err;
+      }
+
+      if (row) {
+        // Collection already exists, return "Conflict" status code
+        return res.status(409).json({ error: "Item already exists!" });
+      } else {
+        // Collection does not exist, insert it
+        db.run('INSERT INTO gallery_items (user_id, contract_addr, token_id, collection_name) VALUES (?, ?, ?)', [userId, contract_addr, token_id, collection_name], function (err) {
+          if (err) {
+            throw err;
+          }
+
+          // Fetch the inserted record
+          db.get('SELECT * FROM gallery_items WHERE user_id = ? AND contract_addr = ? AND token_id = ?', [userId, contract_addr, token_id], (err, insertedRow) => {
+            if (err) {
+              throw err;
+            }
+            return res.status(201).json(insertedRow);
+          });
+        });
+      }
+    });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete('/gallery-items/delete', authenticateToken, (req, res) => {
+  const { id } = req.body;
+  const userId = req.user.userId;
+
+  db.run('DELETE FROM gallery_items WHERE id = ? AND user_id = ?', [id, userId], function(err) {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    return res.status(200).json({ success: true, id });
+  });
+});
+
 app.listen(process.env.PORT || 5000, () => {
   console.log(`Server running on port ${process.env.PORT || 5000}`);
 });
