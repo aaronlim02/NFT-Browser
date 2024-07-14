@@ -166,6 +166,7 @@ app.post('/settings/personal-details', authenticateToken, async (req, res) => {
   }
 });
 
+// watchlist //
 // add to watchlist
 app.post('/watchlist/add_from_nft_browser', authenticateToken, async (req, res) => {
   const userId = req.user.userId; // Assuming userId is set in the authenticateToken middleware
@@ -298,7 +299,24 @@ app.delete('/notifications/delete-all', authenticateToken, (req, res) => {
   });
 });
 
-// galleries feature
+// galleries feature //
+// retrieve galleries for account
+app.get('/galleries/retrieve_from_account', authenticateToken, async (req, res) => {
+  const userId = req.user.userId; // Assuming userId is set in the authenticateToken middleware
+
+  try {
+    // Fetch all items belonging to the user
+    db.all('SELECT * FROM galleries WHERE user_id = ?', [userId], (err, rows) => {
+      if (err) {
+        return res.status(500).json({ error: err.message });
+      }
+      return res.status(200).json(rows);
+    });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
 app.post('/galleries/add', authenticateToken, async (req, res) => {
   const userId = req.user.userId; // Assuming userId is set in the authenticateToken middleware
   const { name, description } = req.body; // Assuming collection is sent in the request body
@@ -366,6 +384,24 @@ app.delete('/galleries/delete', authenticateToken, (req, res) => {
     }
     return res.status(200).json({ success: true, id });
   });
+});
+
+// gallery
+app.get('/gallery-items/view', authenticateToken, async (req, res) => {
+  const userId = req.user.userId; // Assuming userId is set in the authenticateToken middleware
+  const { galleryId } = req.body;
+
+  try {
+    // Fetch all items belonging to the user
+    db.all('SELECT * FROM gallery_items WHERE user_id = ? AND gallery_id = ?', [userId, galleryId], (err, rows) => {
+      if (err) {
+        return res.status(500).json({ error: err.message });
+      }
+      return res.status(200).json(rows);
+    });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
 });
 
 app.post('/gallery-items/add', authenticateToken, async (req, res) => {

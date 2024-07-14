@@ -1,21 +1,23 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState } from 'react';
 import Sidebar from './galleries-components/Sidebar';
 import MainContent from './galleries-components/Maincontent';
 import './galleries.css';
 
 const Galleries = () => {
-  const [output, setOutput] = useState({});
-  const fetchDataCalledRef = useRef(false); // Ref to prevent duplicate fetching
+  const [selectedGallery, setSelectedGallery] = useState(null);
+
+  const handleSidebarClick = (gallery) => {
+    setSelectedGallery(gallery);
+  };
 
   return (
     <main>
       <div className="main-container">
-        <Sidebar/>
-        <MainContent/>
+        <Sidebar onSidebarClick={handleSidebarClick} selectedGallery={selectedGallery} />
+        <MainContent selectedGallery={selectedGallery} />
       </div>
     </main>
   );
-  
 };
 
 export default Galleries;

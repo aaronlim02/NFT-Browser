@@ -16,7 +16,34 @@ main {
   padding-left: 330px;
 }
 
-.modal-overlay {
+.sidebar {
+  width: 300px;
+  padding: 20px;
+  background-color: #f4f4f4;
+}
+
+.sidebar-buttons button {
+  display: block;
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 10px;
+  font-size: 16px;
+  cursor: pointer;
+  border: none;
+  background-color: #fff;
+  transition: background-color 0.3s;
+}
+
+.sidebar-buttons button:hover {
+  background-color: #ddd;
+}
+
+.sidebar-buttons button.selected {
+  background-color: #666;
+  color: white;
+}
+
+.sidebar-modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -29,7 +56,7 @@ main {
   z-index: 1000;
 }
 
-.modal {
+.sidebar-modal {
   background: white;
   padding: 20px;
   border-radius: 4px;
@@ -38,4 +65,19 @@ main {
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
   position: relative;
   z-index: 1001;
+}
+
+.sidebar-modal-form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.sidebar-modal-form-button {
+  width: 100px;
+}
+
+.sidebar-modal-form-input {
+  width: 500px;
+  align-items: center;
 }
