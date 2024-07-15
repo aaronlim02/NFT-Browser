@@ -389,28 +389,31 @@ app.delete('/galleries/delete', authenticateToken, (req, res) => {
 // gallery
 app.get('/gallery-items/view', authenticateToken, async (req, res) => {
   const userId = req.user.userId; // Assuming userId is set in the authenticateToken middleware
-  const { galleryId } = req.body;
+  const galleryId = req.query.galleryId;
 
   try {
     // Fetch all items belonging to the user
-    db.all('SELECT * FROM gallery_items WHERE user_id = ? AND gallery_id = ?', [userId, galleryId], (err, rows) => {
+    logger.info("galleryId");
+    logger.info(galleryId);
+    
+    db.all('SELECT * FROM gallery_items WHERE gallery_id = ?', [galleryId], (err, rows) => {
       if (err) {
-        return res.status(500).json({ error: err.message });
+        return res.status(500).json({ error: err.message});
       }
       return res.status(200).json(rows);
     });
   } catch (err) {
-    return res.status(500).json({ error: err.message });
+    return res.status(501).json({ error: err.message});
   }
 });
 
 app.post('/gallery-items/add', authenticateToken, async (req, res) => {
   const userId = req.user.userId; // Assuming userId is set in the authenticateToken middleware
-  const { contract_addr, token_id, collection_name } = req.body; // Assuming collection is sent in the request body
+  const { gallery_id, contract_addr, token_id, collection_name } = req.body; // Assuming collection is sent in the request body
 
   try {
     // Check if the item already exists in the user's watchlist
-    db.get('SELECT * FROM gallery_items WHERE user_id = ? AND contract_addr = ? AND token_id = ?', [userId, contract_addr, token_id], (err, row) => {
+    db.get('SELECT * FROM gallery_items WHERE gallery_id = ? AND contract_addr = ? AND token_id = ?', [gallery_id, contract_addr, token_id], (err, row) => {
       if (err) {
         throw err;
       }
@@ -420,13 +423,13 @@ app.post('/gallery-items/add', authenticateToken, async (req, res) => {
         return res.status(409).json({ error: "Item already exists!" });
       } else {
         // Collection does not exist, insert it
-        db.run('INSERT INTO gallery_items (user_id, contract_addr, token_id, collection_name) VALUES (?, ?, ?)', [userId, contract_addr, token_id, collection_name], function (err) {
+        db.run('INSERT INTO gallery_items (gallery_id, contract_addr, token_id, collection_name) VALUES (?, ?, ?, ?)', [gallery_id, contract_addr, token_id, collection_name], function (err) {
           if (err) {
             throw err;
           }
 
           // Fetch the inserted record
-          db.get('SELECT * FROM gallery_items WHERE user_id = ? AND contract_addr = ? AND token_id = ?', [userId, contract_addr, token_id], (err, insertedRow) => {
+          db.get('SELECT * FROM gallery_items WHERE gallery_id = ? AND contract_addr = ? AND token_id = ?', [gallery_id, contract_addr, token_id], (err, insertedRow) => {
             if (err) {
               throw err;
             }

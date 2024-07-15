@@ -73,7 +73,7 @@ def iterate_get_listed_nfts(nfts_raw): # iterate getting nft out of json
         opensea_url = asset["permalink"]
         is_verified = True if asset["collection"]["safelist_request_status"] == "verified" or asset["collection"]["safelist_request_status"] == "approved" else False
         is_creator_fees_enforced = asset["collection"]["is_creator_fees_enforced"]
-        nfts.append([collection, collection_name, identifier, name, img, price, opensea_url, is_verified, is_creator_fees_enforced]) # nft_data_listed
+        nfts.append([name, collection_name, img, collection, identifier, price, opensea_url, is_verified, is_creator_fees_enforced]) # nft_data_listed
     
     min_price_dict = {}
     final = []

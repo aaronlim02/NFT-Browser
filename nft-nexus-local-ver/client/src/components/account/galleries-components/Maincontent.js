@@ -11,10 +11,9 @@ const MainContent = ({ selectedGallery }) => {
     const fetchGalleryItems = async () => {
       try {
         const token = getToken();
-        const id = selectedGallery.id
-        const response = await axios.get(`http://localhost:5000/gallery-items/view`, {
-          headers: { Authorization: `Bearer ${token}` },
-          data: { id }
+        const id = selectedGallery.id;
+        const response = await axios.get(`http://localhost:5000/gallery-items/view?galleryId=${id}`, {
+          headers: { Authorization: `Bearer ${token}` }
         });
         setGalleryItems(response.data);
       } catch (error) {
@@ -33,7 +32,7 @@ const MainContent = ({ selectedGallery }) => {
     <div className="galleries-body">
       <h2>{selectedGallery.name}</h2>
       <p>{selectedGallery.description}</p>
-      <h3>Items</h3>
+      <p>{galleryItems.length} Items</p>
       <ul>
         {galleryItems.map(item => (
           <li key={item.id}>
