@@ -38,7 +38,7 @@ const NFTDisplayGrid = ({ content, mode, onAddToGalleryClick }) => {
                 </div>
                 <h3>{item[0] ? item[0] : "<no-name>"}</h3>
                 <p>{item[1]}</p>
-                <a href={item[4]} target="_blank" rel="noopener noreferrer">View On Opensea</a>
+                <a href={item[6]} target="_blank" rel="noopener noreferrer">View On Opensea</a>
                 <button onClick={() => onAddToGalleryClick(item)}>Add to Gallery</button>
               </div>
             ))}

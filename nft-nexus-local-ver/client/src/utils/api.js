@@ -34,3 +34,13 @@ export const walletStats = async (data) => {
     throw error;
   }
 };
+
+export const loadGalleryItems = async (data) => {
+  try {
+    const response = await api.post('/load-gallery-items', (data));
+    return response.data;
+  } catch (error) {
+    console.error('Error processing data:', error);
+    throw error;
+  }
+};

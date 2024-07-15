@@ -14,8 +14,8 @@ const AddToGalleryModal = ({ isOpen, onRequestClose, nft, galleries, onAdd }) =>
       const response = await axios.post(`http://localhost:5000/gallery-items/add`, {
         gallery_id: selectedGallery,
         collection_name: nft[0],
-        contract_addr: nft[1],
-        token_id: nft[2]
+        contract_addr: nft[3],
+        token_id: nft[4]
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });

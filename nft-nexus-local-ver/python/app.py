@@ -108,6 +108,8 @@ def alchemy_process(nfts):
         input.append({"contractAddress": nft[0], 
                       "tokenId": nft[1],
                       "tokenType": nft[2]})
+        
+    print(input)
     url = f"https://eth-mainnet.g.alchemy.com/nft/v3/{alchemy_api_key}/getNFTMetadataBatch"
     payload = {"tokens": input, "refreshCache": False}
     headers = {
@@ -132,7 +134,46 @@ def alchemy_process(nfts):
             image = opensea_metadata["imageUrl"]
         fp = opensea_metadata["floorPrice"]
         opensea_url = nft_data[4]
-        out.append([name, colle_name, image, fp, opensea_url]) # final
+
+        url_parts = opensea_url.split("/")
+        collection_addr = url_parts[-2]
+        identifier = url_parts[-1]
+        out.append([name, colle_name, image, collection_addr, identifier, None, opensea_url]) # final
+    return out
+
+def alchemy_process_2(nfts):
+    input = []
+    for nft in nfts:
+        input.append({"contractAddress": nft[0], 
+                      "tokenId": nft[1],
+                      "tokenType": nft[2]})
+        
+    print(input)
+    url = f"https://eth-mainnet.g.alchemy.com/nft/v3/{alchemy_api_key}/getNFTMetadataBatch"
+    payload = {"tokens": input, "refreshCache": False}
+    headers = {
+        "accept": "application/json",
+        "content-type": "application/json"
+    }
+    response = requests.post(url, json=payload, headers=headers)
+    print("get nft addi_data code:", response.status_code)
+    data = response.json()
+    out = []
+    for i in range(len(data["nfts"])):
+        nft_data = nfts[i]
+        nft_additional_data = data["nfts"][i]
+        opensea_metadata = nft_additional_data["contract"]["openSeaMetadata"]
+
+        name = nft_additional_data["name"]
+        if not name:
+            name = None
+        colle_name = opensea_metadata["collectionName"]
+        image = nft_additional_data["image"]["cachedUrl"]
+        if not image or image[:16] == "https://ipfs.io/":
+            image = opensea_metadata["imageUrl"]
+        opensea_url = f"https://opensea.io/assets/ethereum/{nft_data[0]}/{nft_data[1]}"
+        
+        out.append([name, colle_name, image, nft_data[0], nft_data[1], opensea_url]) # final
     return out
 
 @app.route('/search-wallet', methods=['POST'])
@@ -159,6 +200,24 @@ def search_wallet():
         'next': next
     }
     return jsonify(processed_data)
+
+# load images and stuff from gallery data
+@app.route('/load-gallery-items', methods=['POST'])
+def load_gallery_items():
+    data = request.get_json()
+    # Perform processing with the received data
+    nfts = [[nft["contract_addr"], nft["token_id"], None] for nft in data]
+    #use alchemy to process nfts
+    nfts_processed = alchemy_process_2(nfts)
+    print(nfts_processed)
+    processed_data = {
+        'message': 'Data processed successfully',
+        'input_data': [data],
+        'output': nfts_processed,
+        'next': None
+    }
+    return jsonify(processed_data)
+
 
 # get collections api
 
