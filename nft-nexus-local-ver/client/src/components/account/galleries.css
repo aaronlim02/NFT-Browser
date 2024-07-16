@@ -81,3 +81,118 @@ main {
   width: 500px;
   align-items: center;
 }
+
+.edit-delete-buttons {
+  display: none;
+  margin-left: auto;
+}
+
+.sidebar-button-container:hover .edit-delete-buttons {
+  display: flex;
+}
+
+.edit-delete-buttons button {
+  margin-left: 5px;
+  background: none;
+  border: none;
+  color: blue;
+  cursor: pointer;
+}
+
+.edit-delete-buttons button:hover {
+  text-decoration: underline;
+}
+
+.sidebar-modal-form-button {
+  margin: 5px;
+}
+
+/* grid */
+
+.gallery-grid-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px; /* Adjust the gap between grid items as needed */
+}
+
+.gallery-grid-item {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 16px;
+  max-width: 200px; /* Adjust max-width as needed */
+  text-align: center;
+}
+
+.gallery-grid-item img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
+
+.gallery-grid-item h3 {
+  font-size: 1.2em;
+  margin: 8px 0;
+}
+
+.gallery-grid-item p {
+  font-size: 1em;
+  margin: 8px 0;
+}
+
+.gallery-grid-item a {
+  display: inline-block;
+  margin: 8px 0;
+  color: #007bff;
+  text-decoration: none;
+}
+
+.gallery-grid-item button {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.gallery-grid-item button:hover {
+  background-color: #c82333;
+}
+
+.gallery-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  right: auto;
+  bottom: auto;
+  margin-right: -50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  width: 300px;
+  text-align: center;
+}
+
+.gallery-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.75);
+}
+
+.gallery-modal-form-button {
+  background-color: #333;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  cursor: pointer;
+  border-radius: 4px;
+  margin: 5px;
+}
+
+.gallery-modal-form-button:hover {
+  background-color: #666;
+}

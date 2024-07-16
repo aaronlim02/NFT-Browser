@@ -354,10 +354,11 @@ app.post('/galleries/add', authenticateToken, async (req, res) => {
 });
 
 app.put('/galleries/edit', authenticateToken, (req, res) => {
-  const { id, name, description } = req.body;
+  const { name, description } = req.body;
+  const id = req.query.galleryId;
   const userId = req.user.userId;
 
-  db.run('UPDATE galleries SET name = ? AND description = ? WHERE id = ? AND user_id = ?', [name, description, id, userId], function(err) {
+  db.run('UPDATE galleries SET name = ?, description = ? WHERE id = ? AND user_id = ?', [name, description, id, userId], function(err) {
     if (err) {
       return res.status(500).json({ error: err.message });
     }
@@ -375,7 +376,7 @@ app.put('/galleries/edit', authenticateToken, (req, res) => {
 });
 
 app.delete('/galleries/delete', authenticateToken, (req, res) => {
-  const { id } = req.body;
+  const id = req.query.galleryId;
   const userId = req.user.userId;
 
   db.run('DELETE FROM galleries WHERE id = ? AND user_id = ?', [id, userId], function(err) {
@@ -393,8 +394,6 @@ app.get('/gallery-items/view', authenticateToken, async (req, res) => {
 
   try {
     // Fetch all items belonging to the user
-    logger.info("galleryId");
-    logger.info(galleryId);
     
     db.all('SELECT * FROM gallery_items WHERE gallery_id = ?', [galleryId], (err, rows) => {
       if (err) {
@@ -444,10 +443,10 @@ app.post('/gallery-items/add', authenticateToken, async (req, res) => {
 });
 
 app.delete('/gallery-items/delete', authenticateToken, (req, res) => {
-  const { id } = req.body;
+  const id = req.query.itemId;
   const userId = req.user.userId;
 
-  db.run('DELETE FROM gallery_items WHERE id = ? AND user_id = ?', [id, userId], function(err) {
+  db.run('DELETE FROM gallery_items WHERE id = ?', [id], function(err) {
     if (err) {
       return res.status(500).json({ error: err.message });
     }

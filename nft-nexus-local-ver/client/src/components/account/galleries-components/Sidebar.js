@@ -6,8 +6,13 @@ import { getToken } from '../../../utils/auth';
 const Sidebar = ({ onSidebarClick, selectedGallery }) => {
   const [galleries, setGalleries] = useState([]);
   const [modalIsOpen, setIsOpen] = useState(false);
+  const [editModalIsOpen, setEditModalIsOpen] = useState(false);
+  const [deleteModalIsOpen, setDeleteModalIsOpen] = useState(false);
   const [newGalleryName, setNewGalleryName] = useState('');
   const [newGalleryDescription, setNewGalleryDescription] = useState('');
+  const [editGallery, setEditGallery] = useState(null);
+  const [deleteGallery, setDeleteGallery] = useState(null);
+  const [hoveredGallery, setHoveredGallery] = useState(null);
 
   useEffect(() => {
     const fetchGalleries = async () => {
@@ -35,6 +40,30 @@ const Sidebar = ({ onSidebarClick, selectedGallery }) => {
     setNewGalleryDescription('');
   };
 
+  const openEditModal = (gallery) => {
+    setEditGallery(gallery);
+    setNewGalleryName(gallery.name);
+    setNewGalleryDescription(gallery.description);
+    setEditModalIsOpen(true);
+  };
+
+  const closeEditModal = () => {
+    setEditModalIsOpen(false);
+    setEditGallery(null);
+    setNewGalleryName('');
+    setNewGalleryDescription('');
+  };
+
+  const openDeleteModal = (gallery) => {
+    setDeleteGallery(gallery);
+    setDeleteModalIsOpen(true);
+  };
+
+  const closeDeleteModal = () => {
+    setDeleteModalIsOpen(false);
+    setDeleteGallery(null);
+  };
+
   const handleAddGallery = async (e) => {
     e.preventDefault();
     try {
@@ -52,19 +81,62 @@ const Sidebar = ({ onSidebarClick, selectedGallery }) => {
     }
   };
 
+  const handleEditGallery = async (e) => {
+    e.preventDefault();
+    try {
+      const token = getToken();
+      console.log({newGalleryName, newGalleryDescription})
+      const response = await axios.put(`http://localhost:5000/galleries/edit?galleryId=${editGallery.id}`, {
+        name: newGalleryName,
+        description: newGalleryDescription
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const updatedGallery = response.data;
+      setGalleries(galleries.map(gallery => gallery.id === editGallery.id ? updatedGallery : gallery));
+      closeEditModal();
+    } catch (error) {
+      console.error('Error editing gallery:', error);
+    }
+  };
+
+  const handleDeleteGallery = async () => {
+    try {
+      const token = getToken();
+      await axios.delete(`http://localhost:5000/galleries/delete?galleryId=${deleteGallery.id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setGalleries(galleries.filter(gallery => gallery.id !== deleteGallery.id));
+      closeDeleteModal();
+    } catch (error) {
+      console.error('Error deleting gallery:', error);
+    }
+  };
+
   return (
     <div className="sidebar">
       <h2>Galleries</h2>
       <p>{galleries.length} galleries</p>
       <div className="sidebar-buttons">
         {galleries.map(gallery => (
-          <button 
+          <div 
             key={gallery.id} 
-            onClick={() => onSidebarClick(gallery)}
-            className={selectedGallery && selectedGallery.id === gallery.id ? 'selected' : ''}
+            className={`sidebar-button-container ${selectedGallery && selectedGallery.id === gallery.id ? 'selected' : ''}`}
+            onMouseEnter={() => setHoveredGallery(gallery.id)}
+            onMouseLeave={() => setHoveredGallery(null)}
           >
-            {gallery.name}
-          </button>
+            <button 
+              onClick={() => onSidebarClick(gallery)}
+            >
+              {gallery.name}
+            </button>
+            {hoveredGallery === gallery.id && (
+              <div className="edit-delete-buttons">
+                <button onClick={() => openEditModal(gallery)}>Edit</button>
+                <button onClick={() => openDeleteModal(gallery)}>Delete</button>
+              </div>
+            )}
+          </div>
         ))}
         <button onClick={openModal}>+ Add Gallery</button>
       </div>
@@ -82,7 +154,7 @@ const Sidebar = ({ onSidebarClick, selectedGallery }) => {
             Name:
             <input
               type="text"
-              class="sidebar-modal-form-input"
+              className="sidebar-modal-form-input"
               value={newGalleryName}
               onChange={(e) => setNewGalleryName(e.target.value)}
               required
@@ -92,14 +164,60 @@ const Sidebar = ({ onSidebarClick, selectedGallery }) => {
             Description:
             <input
               type="text"
-              class="sidebar-modal-form-input"
+              className="sidebar-modal-form-input"
               value={newGalleryDescription}
               onChange={(e) => setNewGalleryDescription(e.target.value)}
             />
           </label>
-          <button type="submit" class="sidebar-modal-form-button">Add</button>
-          <button type="button" class="sidebar-modal-form-button" onClick={closeModal}>Cancel</button>
+          <button type="submit" className="sidebar-modal-form-button">Add</button>
+          <button type="button" className="sidebar-modal-form-button" onClick={closeModal}>Cancel</button>
         </form>
+      </Modal>
+
+      <Modal
+        isOpen={editModalIsOpen}
+        onRequestClose={closeEditModal}
+        contentLabel="Edit Gallery"
+        className="sidebar-modal"
+        overlayClassName="sidebar-modal-overlay"
+      >
+        <h2>Edit Gallery</h2>
+        <form onSubmit={handleEditGallery} className='sidebar-modal-form'>
+          <label>
+            Name:
+            <input
+              type="text"
+              className="sidebar-modal-form-input"
+              value={newGalleryName}
+              onChange={(e) => setNewGalleryName(e.target.value)}
+              required
+            />
+          </label>
+          <label>
+            Description:
+            <input
+              type="text"
+              className="sidebar-modal-form-input"
+              value={newGalleryDescription}
+              onChange={(e) => setNewGalleryDescription(e.target.value)}
+            />
+          </label>
+          <button type="submit" className="sidebar-modal-form-button">Save</button>
+          <button type="button" className="sidebar-modal-form-button" onClick={closeEditModal}>Cancel</button>
+        </form>
+      </Modal>
+
+      <Modal
+        isOpen={deleteModalIsOpen}
+        onRequestClose={closeDeleteModal}
+        contentLabel="Delete Gallery"
+        className="sidebar-modal"
+        overlayClassName="sidebar-modal-overlay"
+      >
+        <h2>Confirm Delete</h2>
+        {deleteGallery && <p>Are you sure you want to delete the gallery "{deleteGallery.name}"?</p>}
+        <button onClick={handleDeleteGallery} className="sidebar-modal-form-button">Yes</button>
+        <button onClick={closeDeleteModal} className="sidebar-modal-form-button">No</button>
       </Modal>
     </div>
   );

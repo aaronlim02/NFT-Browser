@@ -144,9 +144,9 @@ def alchemy_process(nfts):
 def alchemy_process_2(nfts):
     input = []
     for nft in nfts:
-        input.append({"contractAddress": nft[0], 
-                      "tokenId": nft[1],
-                      "tokenType": nft[2]})
+        input.append({"contractAddress": nft[1], 
+                      "tokenId": nft[2],
+                      "tokenType": nft[3]})
         
     print(input)
     url = f"https://eth-mainnet.g.alchemy.com/nft/v3/{alchemy_api_key}/getNFTMetadataBatch"
@@ -171,9 +171,9 @@ def alchemy_process_2(nfts):
         image = nft_additional_data["image"]["cachedUrl"]
         if not image or image[:16] == "https://ipfs.io/":
             image = opensea_metadata["imageUrl"]
-        opensea_url = f"https://opensea.io/assets/ethereum/{nft_data[0]}/{nft_data[1]}"
+        opensea_url = f"https://opensea.io/assets/ethereum/{nft_data[1]}/{nft_data[2]}"
         
-        out.append([name, colle_name, image, nft_data[0], nft_data[1], opensea_url]) # final
+        out.append([nft_data[0], name, colle_name, image, nft_data[1], nft_data[2], opensea_url]) # final
     return out
 
 @app.route('/search-wallet', methods=['POST'])
@@ -206,10 +206,9 @@ def search_wallet():
 def load_gallery_items():
     data = request.get_json()
     # Perform processing with the received data
-    nfts = [[nft["contract_addr"], nft["token_id"], None] for nft in data]
+    nfts = [[nft["id"], nft["contract_addr"], nft["token_id"], None] for nft in data]
     #use alchemy to process nfts
     nfts_processed = alchemy_process_2(nfts)
-    print(nfts_processed)
     processed_data = {
         'message': 'Data processed successfully',
         'input_data': [data],
