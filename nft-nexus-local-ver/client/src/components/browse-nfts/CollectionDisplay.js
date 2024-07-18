@@ -2,8 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { getToken, isAuthenticated } from '../../utils/auth';
 import axios from 'axios';
 import { loadSalesGraph } from '../../utils/api';
+import SalesGraphModal from './SalesGraphModal';
 
 const Results = ({ content, interval, resultsType, status }) => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalImageSrc, setModalImageSrc] = useState(null);
 
   const getColor = (value) => {
     if (value > 0) return 'green';
@@ -18,18 +21,17 @@ const Results = ({ content, interval, resultsType, status }) => {
   const handleViewSaleGraph = async (name, slug) => {
     try {
       const response = await loadSalesGraph({ name, slug });
-      console.log('Response from server:', response); // Log the full response for debugging
-      const { image } = response; // Destructure directly from response
+      const { image } = response;
       if (image) {
         const imgSrc = `data:image/png;base64,${image}`;
-        const newWindow = window.open();
-        newWindow.document.write(`<img src="${imgSrc}" alt="Sales Graph" />`);
+        setModalImageSrc(imgSrc);
+        setIsModalOpen(true);
       } else {
-        alert('Failed to fetch sales graph 1');
+        alert('Failed to fetch sales graph');
       }
     } catch (error) {
       console.error('Error fetching sales graph:', error);
-      alert('Failed to fetch sales graph 2');
+      alert('Failed to fetch sales graph');
     }
   };
 
@@ -153,6 +155,11 @@ const Results = ({ content, interval, resultsType, status }) => {
               ))}
             </tbody>
           </table>
+          <SalesGraphModal
+            isOpen={isModalOpen}
+            onRequestClose={() => setIsModalOpen(false)}
+            imageSrc={modalImageSrc}
+          />
         </div>
       );
     } catch {

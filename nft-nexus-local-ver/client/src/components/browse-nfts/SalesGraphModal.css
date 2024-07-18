@@ -1,0 +1,12 @@
+/* Modal Styles */
+.ReactModal__Overlay {
+background-color: rgba(0, 0, 0, 0.75) !important;
+}
+
+.ReactModal__Content {
+max-width: 80%;
+max-height: 80%;
+overflow: auto;
+border-radius: 8px;
+padding: 20px;
+}
