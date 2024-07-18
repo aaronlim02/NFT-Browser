@@ -1,7 +1,7 @@
 import React from 'react';
 import Modal from 'react-modal';
 
-const SalesGraphModal = ({ isOpen, onRequestClose, imageSrc }) => (
+const SalesGraphModal = ({ isOpen, onRequestClose, imageSrc, name }) => (
   <Modal
     isOpen={isOpen}
     onRequestClose={onRequestClose}
@@ -17,7 +17,7 @@ const SalesGraphModal = ({ isOpen, onRequestClose, imageSrc }) => (
       },
     }}
   >
-    <h2>Sales Graph</h2>
+    <h2>{"Sales Graph for " + name}</h2>
     {imageSrc ? <img src={imageSrc} alt="Sales Graph" /> : <p>Loading...</p>}
     <button onClick={onRequestClose}>Close</button>
   </Modal>

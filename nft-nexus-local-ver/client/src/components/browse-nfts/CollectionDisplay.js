@@ -5,6 +5,7 @@ import { loadSalesGraph } from '../../utils/api';
 import SalesGraphModal from './SalesGraphModal';
 
 const Results = ({ content, interval, resultsType, status }) => {
+  const [collection, setCollection] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalImageSrc, setModalImageSrc] = useState(null);
 
@@ -24,6 +25,7 @@ const Results = ({ content, interval, resultsType, status }) => {
       const { image } = response;
       if (image) {
         const imgSrc = `data:image/png;base64,${image}`;
+        setCollection(name);
         setModalImageSrc(imgSrc);
         setIsModalOpen(true);
       } else {
@@ -159,6 +161,7 @@ const Results = ({ content, interval, resultsType, status }) => {
             isOpen={isModalOpen}
             onRequestClose={() => setIsModalOpen(false)}
             imageSrc={modalImageSrc}
+            name={collection}
           />
         </div>
       );

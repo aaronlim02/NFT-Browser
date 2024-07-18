@@ -14,6 +14,9 @@ from dotenv import load_dotenv
 import sqlite3
 import datetime
 from flask_socketio import SocketIO, emit
+# pls add in requirements
+import numpy as np
+import pandas as pd
 
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*")
@@ -22,8 +25,9 @@ load_dotenv()
 
 # Dummy sales data for demonstration, pls replace with actual api call
 sales_data = {
-    "dates": ["2023-06-01", "2023-06-02", "2023-06-03"],
-    "sales": [5, 15, 10]
+    "dates": pd.date_range(start="2024-01-01", periods=1000, freq='D').tolist(),
+    "price": np.random.uniform(low=0.1, high=5.0, size=1000).tolist(),
+    "currency": np.random.choice(["WETH", "ETH"], size=1000).tolist()
 }
 
 opensea_api_key = "d7bc517c25894772ae915ef729c8a443"
@@ -450,13 +454,60 @@ def sales_graph():
     name = data.get("name")
     slug = data.get("slug")
 
-    dates = sales_data["dates"]
-    sales = sales_data["sales"]
+    dates = pd.to_datetime(sales_data["dates"])
+    sales = sales_data["price"]
+    currency = sales_data["currency"]
 
-    fig, ax = plt.subplots()
-    ax.plot(dates, sales, marker='o')
-    ax.set(xlabel='Date', ylabel='Sales', title=f'Sales Graph for {name}')
-    ax.grid()
+    # bins
+    x_bins = np.linspace(min(dates).value, max(dates).value, 100)  # Convert datetime to numeric for histogram
+    y_bins = np.linspace(min(sales), max(sales), 50)
+
+    # Create a 2D histogram (binning the data)
+    histogram_data, x_edges, y_edges = np.histogram2d(dates.values.astype(float), sales, bins=(x_bins, y_bins))
+
+    # Create the plot
+    fig, ax1 = plt.subplots(facecolor='#DDDDDD', figsize=(10, 5))
+
+    # Rotate the histogram data
+    rotated_data = np.rot90(histogram_data)
+
+    # Create a colormap with a black color for undefined values
+    cmap = plt.get_cmap('inferno')
+    cmap.set_bad('black')
+
+    # Plot the heatmap
+    heatmap = ax1.imshow(rotated_data, cmap=cmap, interpolation='nearest', 
+                         extent=[min(dates), max(dates), min(sales), max(sales)], 
+                         aspect='auto', zorder=1)
+
+    # Set color and size for data points
+    point_size = 6
+    color_map = {'WETH': 'red', 'ETH': 'cyan'}
+    colors = [color_map[cat] for cat in currency]
+
+    # Plot the scatter plot on top of the heatmap
+    scatter = ax1.scatter(dates, sales, c=colors, marker='o', label='useless for now', 
+                          s=point_size, edgecolors='black', linewidths=0.5, zorder=2)
+    
+    # Add colorbar
+    cbar = fig.colorbar(heatmap, ax=ax1, label='Number of Sales', format='%.0e')
+    # remove the exponent
+    cbar.set_ticklabels(cbar.get_ticks())
+    # Set the border color of the colorbar
+    cbar.outline.set_edgecolor('gray')
+    # Set the tickmark color of the colorbar
+    cbar.ax.tick_params(axis='y', color='gray', labelcolor='gray', which='minor')
+    cbar.ax.tick_params(axis='y', color='black', labelcolor='black', which='major')
+
+    ax1.tick_params(axis='y', colors='black')
+    ax1.tick_params(axis='x', colors='black', rotation=15)
+
+    # Add labels and title
+    ax1.set_xlabel('time')
+    ax1.set_ylabel('price (ETH)')
+
+    # Adjust layout to ensure labels are not cut off
+    plt.tight_layout()
 
     img = io.BytesIO()
     fig.savefig(img, format='png')
