@@ -44,3 +44,13 @@ export const loadGalleryItems = async (data) => {
     throw error;
   }
 };
+
+export const loadSalesGraph = async (data) => {
+  try {
+    const response = await api.post('/sales-graph/load', (data));
+    return response.data;
+  } catch (error) {
+    console.error('Error processing data:', error);
+    throw error;
+  }
+};

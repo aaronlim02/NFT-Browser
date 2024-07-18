@@ -1,4 +1,9 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_file
+import matplotlib
+matplotlib.use('Agg')  # Use a non-GUI backend
+import matplotlib.pyplot as plt
+import io
+import base64
 import json
 from flask_cors import CORS
 import requests
@@ -14,6 +19,12 @@ app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*")
 CORS(app)
 load_dotenv()
+
+# Dummy sales data for demonstration, pls replace with actual api call
+sales_data = {
+    "dates": ["2023-06-01", "2023-06-02", "2023-06-03"],
+    "sales": [5, 15, 10]
+}
 
 opensea_api_key = "d7bc517c25894772ae915ef729c8a443"
 alchemy_api_key = "Fn6XgY7SlhdqnbN09xv5QFenmRxaK0Ej"
@@ -431,6 +442,28 @@ def get_notifications(user_id):
         return jsonify(notifications_list)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
+@app.route('/sales-graph/load', methods=['POST'])
+def sales_graph():
+    data = request.json
+    
+    name = data.get("name")
+    slug = data.get("slug")
+
+    dates = sales_data["dates"]
+    sales = sales_data["sales"]
+
+    fig, ax = plt.subplots()
+    ax.plot(dates, sales, marker='o')
+    ax.set(xlabel='Date', ylabel='Sales', title=f'Sales Graph for {name}')
+    ax.grid()
+
+    img = io.BytesIO()
+    fig.savefig(img, format='png')
+    img.seek(0)
+    img_base64 = base64.b64encode(img.getvalue()).decode()
+
+    return jsonify({"image": img_base64})
 
 
 if __name__ == '__main__':
