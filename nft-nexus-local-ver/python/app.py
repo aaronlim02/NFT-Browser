@@ -1,4 +1,9 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_file
+import matplotlib
+matplotlib.use('Agg')  # Use a non-GUI backend
+import matplotlib.pyplot as plt
+import io
+import base64
 import json
 from flask_cors import CORS
 import requests
@@ -8,10 +13,18 @@ import os
 from dotenv import load_dotenv
 import sqlite3
 import datetime
+from flask_socketio import SocketIO, emit
 
 app = Flask(__name__)
+socketio = SocketIO(app, cors_allowed_origins="*")
 CORS(app)
 load_dotenv()
+
+# Dummy sales data for demonstration, pls replace with actual api call
+sales_data = {
+    "dates": ["2023-06-01", "2023-06-02", "2023-06-03"],
+    "sales": [5, 15, 10]
+}
 
 opensea_api_key = "d7bc517c25894772ae915ef729c8a443"
 alchemy_api_key = "Fn6XgY7SlhdqnbN09xv5QFenmRxaK0Ej"
@@ -71,7 +84,7 @@ def iterate_get_listed_nfts(nfts_raw): # iterate getting nft out of json
         opensea_url = asset["permalink"]
         is_verified = True if asset["collection"]["safelist_request_status"] == "verified" or asset["collection"]["safelist_request_status"] == "approved" else False
         is_creator_fees_enforced = asset["collection"]["is_creator_fees_enforced"]
-        nfts.append([collection, collection_name, identifier, name, img, price, opensea_url, is_verified, is_creator_fees_enforced]) # nft_data_listed
+        nfts.append([name, collection_name, img, collection, identifier, price, opensea_url, is_verified, is_creator_fees_enforced]) # nft_data_listed
     
     min_price_dict = {}
     final = []
@@ -106,6 +119,8 @@ def alchemy_process(nfts):
         input.append({"contractAddress": nft[0], 
                       "tokenId": nft[1],
                       "tokenType": nft[2]})
+        
+    print(input)
     url = f"https://eth-mainnet.g.alchemy.com/nft/v3/{alchemy_api_key}/getNFTMetadataBatch"
     payload = {"tokens": input, "refreshCache": False}
     headers = {
@@ -130,7 +145,46 @@ def alchemy_process(nfts):
             image = opensea_metadata["imageUrl"]
         fp = opensea_metadata["floorPrice"]
         opensea_url = nft_data[4]
-        out.append([name, colle_name, image, fp, opensea_url]) # final
+
+        url_parts = opensea_url.split("/")
+        collection_addr = url_parts[-2]
+        identifier = url_parts[-1]
+        out.append([name, colle_name, image, collection_addr, identifier, None, opensea_url]) # final
+    return out
+
+def alchemy_process_2(nfts):
+    input = []
+    for nft in nfts:
+        input.append({"contractAddress": nft[1], 
+                      "tokenId": nft[2],
+                      "tokenType": nft[3]})
+        
+    print(input)
+    url = f"https://eth-mainnet.g.alchemy.com/nft/v3/{alchemy_api_key}/getNFTMetadataBatch"
+    payload = {"tokens": input, "refreshCache": False}
+    headers = {
+        "accept": "application/json",
+        "content-type": "application/json"
+    }
+    response = requests.post(url, json=payload, headers=headers)
+    print("get nft addi_data code:", response.status_code)
+    data = response.json()
+    out = []
+    for i in range(len(data["nfts"])):
+        nft_data = nfts[i]
+        nft_additional_data = data["nfts"][i]
+        opensea_metadata = nft_additional_data["contract"]["openSeaMetadata"]
+
+        name = nft_additional_data["name"]
+        if not name:
+            name = None
+        colle_name = opensea_metadata["collectionName"]
+        image = nft_additional_data["image"]["cachedUrl"]
+        if not image or image[:16] == "https://ipfs.io/":
+            image = opensea_metadata["imageUrl"]
+        opensea_url = f"https://opensea.io/assets/ethereum/{nft_data[1]}/{nft_data[2]}"
+        
+        out.append([nft_data[0], name, colle_name, image, nft_data[1], nft_data[2], opensea_url]) # final
     return out
 
 @app.route('/search-wallet', methods=['POST'])
@@ -157,6 +211,23 @@ def search_wallet():
         'next': next
     }
     return jsonify(processed_data)
+
+# load images and stuff from gallery data
+@app.route('/load-gallery-items', methods=['POST'])
+def load_gallery_items():
+    data = request.get_json()
+    # Perform processing with the received data
+    nfts = [[nft["id"], nft["contract_addr"], nft["token_id"], None] for nft in data]
+    #use alchemy to process nfts
+    nfts_processed = alchemy_process_2(nfts)
+    processed_data = {
+        'message': 'Data processed successfully',
+        'input_data': [data],
+        'output': nfts_processed,
+        'next': None
+    }
+    return jsonify(processed_data)
+
 
 # get collections api
 
@@ -276,19 +347,24 @@ def load_wallet():
 
 def fetch_floor_prices():
     try:
-        conn = sqlite3.connect(database_url)
+        print("Fetching start...")
+        conn = sqlite3.connect(database_url, isolation_level=None)
         cursor = conn.cursor()
 
         cursor.execute('SELECT * FROM watchlist')
         collections = cursor.fetchall()
+        print(f"Fetched {len(collections)} collections")
 
         for collection in collections:
+            print(collection)
+            user_id = collection[1]
             collection_slug = collection[2]
             collection_name = collection[3]
             set_price = collection[4]
 
             if not set_price:
-                return
+                print(f"{collection[3]} no set price")
+                continue
 
             url = f'https://api.opensea.io/api/v2/collections/{collection_slug}/stats'
             response = requests.get(url, headers=opensea_headers)
@@ -296,7 +372,10 @@ def fetch_floor_prices():
             floor_price = float(response_data['total']['floor_price'])
 
             if floor_price < set_price:
-                notify_user(collection[1], collection_slug, collection_name, floor_price)
+                print(f"{collection[3]} below set price")
+                notify_user(user_id, collection_slug, collection_name, floor_price)
+            else:
+                print(f"{collection[3]} at or above set price")
 
         conn.close()
     except Exception as e:
@@ -315,18 +394,25 @@ def notify_user(user_id, collection_slug, collection_name, floor_price):
         # Update the existing notification, only floor_price and updatedAt is updated
         cursor.execute('UPDATE notifications SET floor_price = ?, updatedAt = ? WHERE user_id = ? AND collection_slug = ?',
                        (floor_price, formatted_now_time, user_id, collection_slug))
+        print(f"update notification user {user_id}: {collection_name} floor price dropped to {floor_price}")
     else:
         # Insert a new notification
         cursor.execute('INSERT INTO notifications (user_id, collection_slug, collection_name, floor_price, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?)',
                        (user_id, collection_slug, collection_name, floor_price, formatted_now_time, formatted_now_time))
+        # Emit WebSocket message for new notification
+        socketio.emit('floor-price-notification', {
+            'user_id': user_id,
+            'collection_slug': collection_slug,
+            'collection_name': collection_name,
+            'floor_price': floor_price
+        })
+        print(f"Notify user {user_id}: {collection_name} floor price dropped to {floor_price}")
     
     conn.commit()
     conn.close()
 
-    print(f"Notify user {user_id}: {collection_name} floor price dropped to {floor_price}")
-
 scheduler = BackgroundScheduler()
-scheduler.add_job(func=fetch_floor_prices, trigger="interval", minutes=1)
+scheduler.add_job(func=fetch_floor_prices, trigger="interval", minutes=1, id='floor_price_job', replace_existing=True)
 scheduler.start()
 
 ##
@@ -356,7 +442,30 @@ def get_notifications(user_id):
         return jsonify(notifications_list)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
+@app.route('/sales-graph/load', methods=['POST'])
+def sales_graph():
+    data = request.json
+    
+    name = data.get("name")
+    slug = data.get("slug")
+
+    dates = sales_data["dates"]
+    sales = sales_data["sales"]
+
+    fig, ax = plt.subplots()
+    ax.plot(dates, sales, marker='o')
+    ax.set(xlabel='Date', ylabel='Sales', title=f'Sales Graph for {name}')
+    ax.grid()
+
+    img = io.BytesIO()
+    fig.savefig(img, format='png')
+    img.seek(0)
+    img_base64 = base64.b64encode(img.getvalue()).decode()
+
+    return jsonify({"image": img_base64})
 
 
 if __name__ == '__main__':
-    app.run(port=5001)
+    socketio.run(app, port=5001, debug=False, allow_unsafe_werkzeug=True) 
+    # starts the Flask app and enables WebSocket support through the Flask-SocketIO extension

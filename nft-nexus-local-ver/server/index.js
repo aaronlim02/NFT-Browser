@@ -82,7 +82,7 @@ app.post('/login', async (req, res) => {
         return res.status(400).json({ error: 'Invalid credentials' });
       }
 
-      const token = jwt.sign({ userId: user.id }, jwtSecretKey, { expiresIn: '1h' });
+      const token = jwt.sign({ userId: user.id }, jwtSecretKey, { expiresIn: '3h' });
       res.json({ token });
     });
   } catch (err) {
@@ -166,6 +166,7 @@ app.post('/settings/personal-details', authenticateToken, async (req, res) => {
   }
 });
 
+// watchlist //
 // add to watchlist
 app.post('/watchlist/add_from_nft_browser', authenticateToken, async (req, res) => {
   const userId = req.user.userId; // Assuming userId is set in the authenticateToken middleware
@@ -280,6 +281,172 @@ app.delete('/notifications/delete', authenticateToken, (req, res) => {
   const userId = req.user.userId;
 
   db.run('DELETE FROM notifications WHERE id = ? AND user_id = ?', [id, userId], function(err) {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    return res.status(200).json({ success: true, id });
+  });
+});
+
+app.delete('/notifications/delete-all', authenticateToken, (req, res) => {
+  const userId = req.user.userId;
+
+  db.run('DELETE FROM notifications WHERE user_id = ?', [userId], function(err) {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    return res.status(200).json({ success: true });
+  });
+});
+
+// galleries feature //
+// retrieve galleries for account
+app.get('/galleries/retrieve_from_account', authenticateToken, async (req, res) => {
+  const userId = req.user.userId; // Assuming userId is set in the authenticateToken middleware
+
+  try {
+    // Fetch all items belonging to the user
+    db.all('SELECT * FROM galleries WHERE user_id = ?', [userId], (err, rows) => {
+      if (err) {
+        return res.status(500).json({ error: err.message });
+      }
+      return res.status(200).json(rows);
+    });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/galleries/add', authenticateToken, async (req, res) => {
+  const userId = req.user.userId; // Assuming userId is set in the authenticateToken middleware
+  const { name, description } = req.body; // Assuming collection is sent in the request body
+
+  try {
+    // Check if the gallery already exists in the user's watchlist
+    db.get('SELECT * FROM galleries WHERE name = ? AND user_id = ?', [name, userId], (err, row) => {
+      if (err) {
+        throw err;
+      }
+
+      if (row) {
+        // Collection already exists, return "Conflict" status code
+        return res.status(409).json({ error: "Gallery already exists!" });
+      } else {
+        // Collection does not exist, insert it
+        db.run('INSERT INTO galleries (user_id, name, description) VALUES (?, ?, ?)', [userId, name, description], function (err) {
+          if (err) {
+            throw err;
+          }
+
+          // Fetch the inserted record
+          db.get('SELECT * FROM galleries WHERE user_id = ? AND name = ?', [userId, name], (err, insertedRow) => {
+            if (err) {
+              throw err;
+            }
+            return res.status(201).json(insertedRow);
+          });
+        });
+      }
+    });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+app.put('/galleries/edit', authenticateToken, (req, res) => {
+  const { name, description } = req.body;
+  const id = req.query.galleryId;
+  const userId = req.user.userId;
+
+  db.run('UPDATE galleries SET name = ?, description = ? WHERE id = ? AND user_id = ?', [name, description, id, userId], function(err) {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    db.get(
+      'SELECT * FROM galleries WHERE id = ? AND user_id = ?',
+      [id, userId],
+      (err, row) => {
+        if (err) {
+          return res.status(500).json({ error: err.message });
+        }
+        return res.status(200).json(row);
+      }
+    );
+  });
+});
+
+app.delete('/galleries/delete', authenticateToken, (req, res) => {
+  const id = req.query.galleryId;
+  const userId = req.user.userId;
+
+  db.run('DELETE FROM galleries WHERE id = ? AND user_id = ?', [id, userId], function(err) {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    return res.status(200).json({ success: true, id });
+  });
+});
+
+// gallery
+app.get('/gallery-items/view', authenticateToken, async (req, res) => {
+  const userId = req.user.userId; // Assuming userId is set in the authenticateToken middleware
+  const galleryId = req.query.galleryId;
+
+  try {
+    // Fetch all items belonging to the user
+    
+    db.all('SELECT * FROM gallery_items WHERE gallery_id = ?', [galleryId], (err, rows) => {
+      if (err) {
+        return res.status(500).json({ error: err.message});
+      }
+      return res.status(200).json(rows);
+    });
+  } catch (err) {
+    return res.status(501).json({ error: err.message});
+  }
+});
+
+app.post('/gallery-items/add', authenticateToken, async (req, res) => {
+  const userId = req.user.userId; // Assuming userId is set in the authenticateToken middleware
+  const { gallery_id, contract_addr, token_id, collection_name } = req.body; // Assuming collection is sent in the request body
+
+  try {
+    // Check if the item already exists in the user's watchlist
+    db.get('SELECT * FROM gallery_items WHERE gallery_id = ? AND contract_addr = ? AND token_id = ?', [gallery_id, contract_addr, token_id], (err, row) => {
+      if (err) {
+        throw err;
+      }
+
+      if (row) {
+        // Collection already exists, return "Conflict" status code
+        return res.status(409).json({ error: "Item already exists!" });
+      } else {
+        // Collection does not exist, insert it
+        db.run('INSERT INTO gallery_items (gallery_id, contract_addr, token_id, collection_name) VALUES (?, ?, ?, ?)', [gallery_id, contract_addr, token_id, collection_name], function (err) {
+          if (err) {
+            throw err;
+          }
+
+          // Fetch the inserted record
+          db.get('SELECT * FROM gallery_items WHERE gallery_id = ? AND contract_addr = ? AND token_id = ?', [gallery_id, contract_addr, token_id], (err, insertedRow) => {
+            if (err) {
+              throw err;
+            }
+            return res.status(201).json(insertedRow);
+          });
+        });
+      }
+    });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete('/gallery-items/delete', authenticateToken, (req, res) => {
+  const id = req.query.itemId;
+  const userId = req.user.userId;
+
+  db.run('DELETE FROM gallery_items WHERE id = ?', [id], function(err) {
     if (err) {
       return res.status(500).json({ error: err.message });
     }

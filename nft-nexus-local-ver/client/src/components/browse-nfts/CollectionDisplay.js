@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getToken, isAuthenticated } from '../../utils/auth';
 import axios from 'axios';
+import { loadSalesGraph } from '../../utils/api';
 
 const Results = ({ content, interval, resultsType, status }) => {
 
@@ -14,10 +15,23 @@ const Results = ({ content, interval, resultsType, status }) => {
     color: getColor(num)
   });
 
-  const handleViewSaleGraph = (name, slug) => {
-    alert(name + ' sale graph');
-    return;
-  }
+  const handleViewSaleGraph = async (name, slug) => {
+    try {
+      const response = await loadSalesGraph({ name, slug });
+      console.log('Response from server:', response); // Log the full response for debugging
+      const { image } = response; // Destructure directly from response
+      if (image) {
+        const imgSrc = `data:image/png;base64,${image}`;
+        const newWindow = window.open();
+        newWindow.document.write(`<img src="${imgSrc}" alt="Sales Graph" />`);
+      } else {
+        alert('Failed to fetch sales graph 1');
+      }
+    } catch (error) {
+      console.error('Error fetching sales graph:', error);
+      alert('Failed to fetch sales graph 2');
+    }
+  };
 
   const handleAddToWatchlist = (name, slug) => {
 
@@ -132,9 +146,9 @@ const Results = ({ content, interval, resultsType, status }) => {
                       {String(Math.round(row[7][i]['volume_change'] * 1000) / 10) + "%"}
                     </p>
                   </td>
-                  <td><button onClick={() => handleViewSaleGraph(row[1])}>View</button></td>
+                  <td><button onClick={() => handleViewSaleGraph(row[0], row[1])}>View</button></td>
                   <td><button onClick={() => handleAddToWatchlist(row[0], row[1])}>Add</button></td>
-                  <td><button onClick={() => handleAddToGallery(row[0], row[1])}>Add</button></td>
+                  <td><button onClick={() => handleAddToGallery(row[0], row[1])}>planning to delete</button></td>
                 </tr>
               ))}
             </tbody>

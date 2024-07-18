@@ -3,3 +3,5 @@ Flask-Cors
 requests
 python-dotenv
 apscheduler
+flask-socketio
+matplotlib

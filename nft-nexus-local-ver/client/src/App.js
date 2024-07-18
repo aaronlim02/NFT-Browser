@@ -10,6 +10,9 @@ import PictureButton from './components/PictureButton';
 import AuthButton from './components/AuthButton';
 import Browse from './components/Browse';
 import { isAuthenticated } from './utils/auth';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import './socket';
 
 const PrivateRoute = ({ element, ...rest }) => {
   return isAuthenticated() ? element : <Navigate to="/login" />;
@@ -42,6 +45,18 @@ function App() {
           <Route path="/guides" element={<Guides />} />
           <Route path="*" element={<Navigate to="/" />} /> {/* Redirect unknown routes to home */}
         </Routes>
+
+        <ToastContainer
+          position="bottom-right"
+          autoClose={5000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+        />
       </div>
     </div>
   );

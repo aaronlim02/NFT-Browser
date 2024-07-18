@@ -77,7 +77,7 @@ const MainContent = ({ watchlistData, error, isLoading, setWatchlistData }) => {
           {watchlistData.map((item) => (
             <tr key={item.id}>
               <td>{item.collection_name}</td>
-              <td>{item.set_price ? `Collection Floor price is below ${item.set_price} ETH` : 'N/A'}</td>
+              <td>{item.set_price ? `Collection Floor price is below ${item.set_price} ETH` : 'Not Set'}</td>
               <td>
                 <button className="delete" onClick={() => handleDelete(item.id)}>Delete</button>
                 <button className="edit" onClick={() => openModal(item)}>Edit Notification Criteria</button>
@@ -92,15 +92,16 @@ const MainContent = ({ watchlistData, error, isLoading, setWatchlistData }) => {
         onRequestClose={closeModal}
         contentLabel="Edit Notification Criteria"
         className="modal"
-        overlayClassName="overlay"
+        overlayClassName="modal-overlay"
       >
         <h2>Edit Notification Criteria</h2>
+        <p>Input a value below. If collection floor price falls below this value, you will be notified.</p>
         <form onSubmit={(e) => {
           e.preventDefault();
           handleEdit();
         }}>
           <label>
-            New Price:
+            New Price (ETH):
             <input
               type="text"
               value={newPrice}

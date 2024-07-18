@@ -17,6 +17,18 @@ const Notifications = ({ notificationData, error, isLoading, setNotificationData
     }
   };
 
+  const handleDeleteAll = async () => {
+    try {
+      const token = getToken();
+      await axios.delete('http://localhost:5000/notifications/delete-all', {
+        headers: { Authorization: `Bearer ${token}` },
+      });;
+      setNotificationData([]);
+    } catch (error) {
+      console.error('Error deleting all notification items:', error);
+    }
+  };
+
   if (isLoading) {
     return <div className="notification-body">Loading...</div>;
   }
@@ -30,7 +42,7 @@ const Notifications = ({ notificationData, error, isLoading, setNotificationData
       <h2>Notifications</h2>
       <div className="notification-sub-header">
         <p>{notificationData.length} items</p>
-        <button className="delete">Delete All</button>
+        <button className="delete" onClick={() => handleDeleteAll()}>Delete All</button>
       </div>
       
       <table className="notification-table">
