@@ -19,6 +19,7 @@ from flask_socketio import SocketIO, emit
 # pls add in requirements
 import numpy as np
 import pandas as pd
+from scipy import stats
 
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*")
@@ -470,7 +471,7 @@ def get_sales_amount_list(slug, start_time, cursor, results):
 
 def get_sales_data(slug, x_days_ago):
     today = datetime.today().replace(microsecond=0)
-    results = get_sales_amount_list(slug, today - timedelta(days=x_days_ago), '', [])
+    results = get_sales_amount_list(slug, today - timedelta(days=x_days_ago) - timedelta(hours=8), '', [])
     return results
 
 @app.route('/sales-graph/load', methods=['POST'])
@@ -497,115 +498,158 @@ def sales_graph():
     sales = [item[1] for item in real_sales_data]
     currency = [item[2] for item in real_sales_data]
 
-    # Convert dates to NumPy array and then to numeric for histogram
-    dates_numeric = np.array([date.value for date in dates])
+    # Data without outliers using z-score method
+    z_scores = stats.zscore(sales)
+    filtered_indices = np.abs(z_scores) < 2
+    sales_data_no_outlier = [item for i, item in enumerate(real_sales_data) if filtered_indices[i]]
+    dates_no_outlier = [pd.to_datetime(item[0]) for item in sales_data_no_outlier]
+    sales_no_outlier = [item[1] for item in sales_data_no_outlier]
+    currency_no_outlier = [item[2] for item in sales_data_no_outlier]
 
-    # bins
-    x_bins = np.linspace(min(dates_numeric), max(dates_numeric), 100)  # Convert datetime to numeric for histogram
-    y_bins = np.linspace(min(sales), max(sales), 40)
+    # Function to create heatmap
+    def create_heatmap(dates, sales):
 
-    #1: create heatmap
-    # Create a 2D histogram (binning the data)
-    histogram_data, x_edges, y_edges = np.histogram2d(dates_numeric, sales, bins=(x_bins, y_bins))
+        # Convert dates to NumPy array and then to numeric for histogram
+        dates_numeric = np.array([date.value for date in dates])
 
-    # Create the heatmap plot with logarithmic color scale
-    fig_heatmap, ax1 = plt.subplots(facecolor='#DDDDDD', figsize=(10, 4))
-    rotated_data = np.rot90(histogram_data)
-    cmap = plt.get_cmap('inferno')
-    cmap.set_bad('black')
-    
-    norm = mcolors.LogNorm(vmin=0.5, vmax=rotated_data.max())
-    heatmap = ax1.imshow(rotated_data, cmap=cmap, norm=norm, interpolation='nearest', 
-                         extent=[min(dates), max(dates), min(sales), max(sales)], 
-                         aspect='auto', zorder=1)
-    cbar = fig_heatmap.colorbar(heatmap, ax=ax1, label='Number of Sales', format='%d')
-    
-    # Set custom major ticks
-    major_ticks = [1, 2, 5, 10, 20, 50, 100, 200, 500]
-    adjusted_major_ticks = [tick for tick in major_ticks if tick <= rotated_data.max()]
-    if rotated_data.max() not in adjusted_major_ticks:
-        adjusted_major_ticks.append(rotated_data.max())
-    cbar.set_ticks(adjusted_major_ticks)
-    cbar.ax.minorticks_on()
-    cbar.ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: f'{int(x)}'))
+        # Bins
+        x_bins = np.linspace(min(dates_numeric), max(dates_numeric), 100)  # Convert datetime to numeric for histogram
+        y_bins = np.linspace(min(sales), max(sales), 40)
 
-    cbar.outline.set_edgecolor('gray')
-    cbar.ax.tick_params(axis='y', color='gray', labelcolor='gray', which='minor', labelsize=0)
-    cbar.ax.tick_params(axis='y', color='black', labelcolor='black', which='major')
-    ax1.tick_params(axis='y', colors='black')
-    ax1.tick_params(axis='x', colors='black', rotation=15)
-    if x_days_ago < 7:
-        date_format = DateFormatter('%m-%d %H:%M')
-        ax1.xaxis.set_major_formatter(date_format)
-    ax1.set_xlabel('time')
-    ax1.set_ylabel('price (ETH)')
-    plt.tight_layout()
+        histogram_data, x_edges, y_edges = np.histogram2d(dates_numeric, sales, bins=(x_bins, y_bins))
+        fig, ax = plt.subplots(facecolor='#DDDDDD', figsize=(10, 4))
+        rotated_data = np.rot90(histogram_data)
+        cmap = plt.get_cmap('inferno')
+        cmap.set_bad('black')
 
-    img_heatmap = io.BytesIO()
-    fig_heatmap.savefig(img_heatmap, format='png')
-    img_heatmap.seek(0)
-    img_heatmap_base64 = base64.b64encode(img_heatmap.getvalue()).decode()
+        norm = mcolors.LogNorm(vmin=0.5, vmax=rotated_data.max())
+        heatmap = ax.imshow(rotated_data, cmap=cmap, norm=norm, interpolation='nearest',
+                            extent=[min(dates), max(dates), min(sales), max(sales)],
+                            aspect='auto', zorder=1)
+        cbar = fig.colorbar(heatmap, ax=ax, label='Number of Sales', format='%d')
 
-    #2: Create the scatter plot
-    fig_scatter, ax2 = plt.subplots(facecolor='#DDDDDD', figsize=(10, 4))
-    point_size = 9
-    color_map = {'WETH': 'red', 'ETH': 'cyan'}
-    colors = [color_map[cat] for cat in currency]
-    scatter = ax2.scatter(dates, sales, c=colors, marker='o', 
-                          s=point_size, edgecolors='black', linewidths=0.5, zorder=2)
-    
-    # Add grid
-    ax2.grid(True, linestyle='--', linewidth=0.5, color='gray')
-    
-    # Add legend for scatter plot
-    for label, color in color_map.items():
-        ax2.scatter([], [], c=color, edgecolors='black', s=point_size, label=label)
-    legend = ax2.legend(frameon=True, loc='best', framealpha=0.5, edgecolor='black')
-    legend.get_frame().set_facecolor('#EEEEEE')  # Light gray background
-    
-    ax2.tick_params(axis='y', colors='black')
-    ax2.tick_params(axis='x', colors='black', rotation=15)
-    if x_days_ago < 7:
-        date_format = DateFormatter('%m-%d %H:%M')
-        ax2.xaxis.set_major_formatter(date_format)
-    ax2.set_xlabel('time')
-    ax2.set_ylabel('price (ETH)')
-    plt.tight_layout()
+        major_ticks = [1, 2, 5, 10, 20, 50, 100, 200, 500]
+        adjusted_major_ticks = [tick for tick in major_ticks if tick <= rotated_data.max()]
+        if rotated_data.max() not in adjusted_major_ticks:
+            adjusted_major_ticks.append(rotated_data.max())
+        cbar.set_ticks(adjusted_major_ticks)
+        cbar.ax.minorticks_on()
+        cbar.ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: f'{int(x)}'))
 
-    img_scatter = io.BytesIO()
-    fig_scatter.savefig(img_scatter, format='png')
-    img_scatter.seek(0)
-    img_scatter_base64 = base64.b64encode(img_scatter.getvalue()).decode()
+        cbar.outline.set_edgecolor('gray')
+        cbar.ax.tick_params(axis='y', color='gray', labelcolor='gray', which='minor', labelsize=0)
+        cbar.ax.tick_params(axis='y', color='black', labelcolor='black', which='major')
+        ax.tick_params(axis='y', colors='black')
+        ax.tick_params(axis='x', colors='black', rotation=15)
+        if x_days_ago < 7:
+            date_format = DateFormatter('%m-%d %H:%M')
+            ax.xaxis.set_major_formatter(date_format)
+        ax.set_xlabel('time')
+        ax.set_ylabel('price (ETH)')
+        plt.tight_layout()
 
-    #3 Create the volume bar chart
-    df = pd.DataFrame({'dates': dates, 'sales': sales})
-    df['date'] = df['dates'].dt.date
-    if x_days_ago < 7:
-        volume_data = df.groupby(pd.Grouper(key='dates', freq='H'))['sales'].sum()
-        bar_width = 0.04
-        x_label = "Hour"
-    else:
-        volume_data = df.groupby('date')['sales'].sum()
-        bar_width = 1
-        x_label = "Date"
-    
-    fig_vol, ax3 = plt.subplots(facecolor='#DDDDDD', figsize=(10, 4))
-    ax3.bar(volume_data.index, volume_data.values, color='gray', width=bar_width, edgecolor='black')
-    ax3.tick_params(axis='y', colors='black')
-    ax3.tick_params(axis='x', colors='black', rotation=15)
-    if x_days_ago < 7:
-        date_format = DateFormatter('%m-%d %H:%M')
-        ax3.xaxis.set_major_formatter(date_format)
-    ax3.set_xlabel(x_label)
-    ax3.set_ylabel('Volume (ETH)')
-    plt.tight_layout()
+        img = io.BytesIO()
+        fig.savefig(img, format='png')
+        img.seek(0)
+        img_base64 = base64.b64encode(img.getvalue()).decode()
+        plt.close(fig)
+        return img_base64
 
-    img_vol = io.BytesIO()
-    fig_vol.savefig(img_vol, format='png')
-    img_vol.seek(0)
-    img_vol_base64 = base64.b64encode(img_vol.getvalue()).decode()
+    # Function to create scatter plot
+    def create_scatter(dates, sales, currency):
+        dates_numeric = np.array([date.value for date in dates])
 
-    return jsonify({"heatmap": img_heatmap_base64, "scatter": img_scatter_base64, "volume": img_vol_base64})
+        fig, ax = plt.subplots(facecolor='#DDDDDD', figsize=(10, 4))
+        point_size = 9
+        color_map = {'WETH': 'red', 'ETH': 'cyan'}
+        colors = [color_map[cat] for cat in currency]
+        scatter = ax.scatter(dates, sales, c=colors, marker='o',
+                             s=point_size, edgecolors='black', linewidths=0.5, zorder=2)
+        
+        ax.grid(True, linestyle='--', linewidth=0.5, color='gray')
+
+        for label, color in color_map.items():
+            ax.scatter([], [], c=color, edgecolors='black', s=point_size, label=label)
+
+        # Calculate and plot the average price line
+        df = pd.DataFrame({'dates': dates, 'sales': sales})
+        average_prices = df.groupby(pd.Grouper(key='dates', freq='H'))['sales'].mean() if x_days_ago < 7 else df.groupby(df['dates'].dt.date)['sales'].mean()
+        average_dates = pd.to_datetime(average_prices.index)
+
+        ax.plot(average_dates, average_prices, color='gray', linestyle='--', linewidth=1.5, label='average')
+
+        # Plot the trendline only if number of data points > 30
+        if len(sales) > 30:
+            z = np.polyfit(dates_numeric, sales, 1)
+            p = np.poly1d(z)
+            ax.plot(dates, p(dates_numeric), color='green', linestyle='-', linewidth=1.5, label='trendline')
+
+        legend = ax.legend(frameon=True, loc='best', framealpha=0.5, edgecolor='black')
+        legend.get_frame().set_facecolor('#EEEEEE')
+
+        ax.tick_params(axis='y', colors='black')
+        ax.tick_params(axis='x', colors='black', rotation=15)
+        if x_days_ago < 7:
+            date_format = DateFormatter('%m-%d %H:%M')
+            ax.xaxis.set_major_formatter(date_format)
+        ax.set_xlabel('time')
+        ax.set_ylabel('price (ETH)')
+        plt.tight_layout()
+
+        img = io.BytesIO()
+        fig.savefig(img, format='png')
+        img.seek(0)
+        img_base64 = base64.b64encode(img.getvalue()).decode()
+        plt.close(fig)
+        return img_base64
+
+    # Function to create volume bar chart
+    def create_volume_chart(dates, sales):
+        df = pd.DataFrame({'dates': dates, 'sales': sales})
+        df['date'] = df['dates'].dt.date
+        if x_days_ago < 7:
+            volume_data = df.groupby(pd.Grouper(key='dates', freq='H'))['sales'].sum()
+            bar_width = 0.04
+            x_label = "Hour"
+        else:
+            volume_data = df.groupby('date')['sales'].sum()
+            bar_width = 1
+            x_label = "Date"
+        
+        fig, ax = plt.subplots(facecolor='#DDDDDD', figsize=(10, 4))
+        ax.bar(volume_data.index, volume_data.values, color='gray', width=bar_width, edgecolor='black')
+        ax.tick_params(axis='y', colors='black')
+        ax.tick_params(axis='x', colors='black', rotation=15)
+        if x_days_ago < 7:
+            date_format = DateFormatter('%m-%d %H:%M')
+            ax.xaxis.set_major_formatter(date_format)
+        ax.set_xlabel(x_label)
+        ax.set_ylabel('Volume (ETH)')
+        plt.tight_layout()
+
+        img = io.BytesIO()
+        fig.savefig(img, format='png')
+        img.seek(0)
+        img_base64 = base64.b64encode(img.getvalue()).decode()
+        plt.close(fig)
+        return img_base64
+
+    # Create heatmap, scatter, and volume chart for both datasets
+    img_heatmap_base64 = create_heatmap(dates, sales)
+    img_heatmap_no_outlier_base64 = create_heatmap(dates_no_outlier, sales_no_outlier)
+    img_scatter_base64 = create_scatter(dates, sales, currency)
+    img_scatter_no_outlier_base64 = create_scatter(dates_no_outlier, sales_no_outlier, currency_no_outlier)
+    img_vol_base64 = create_volume_chart(dates, sales)
+    img_vol_no_outlier_base64 = create_volume_chart(dates_no_outlier, sales_no_outlier)
+
+    return jsonify({
+        "heatmap": img_heatmap_base64,
+        "scatter": img_scatter_base64,
+        "volume": img_vol_base64,
+        "heatmap_no_outlier": img_heatmap_no_outlier_base64,
+        "scatter_no_outlier": img_scatter_no_outlier_base64,
+        "volume_no_outlier": img_vol_no_outlier_base64
+    })
 
 
 if __name__ == '__main__':

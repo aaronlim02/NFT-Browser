@@ -3,9 +3,18 @@ import Modal from 'react-modal';
 
 const SalesGraphModal = ({ isOpen, onRequestClose, heatmapSrc, scatterSrc, volumeSrc, name }) => {
   const [view, setView] = useState('heatmap');
+  const [showOutlier, setShowOutlier] = useState(true);
 
   const handleChange = (event) => {
     setView(event.target.value);
+  };
+
+  const handleToggleOutlier = () => {
+    setShowOutlier(prevShowOutlier => !prevShowOutlier);
+  };
+
+  const getCurrentSrc = (srcObj) => {
+    return showOutlier ? srcObj.outlier : srcObj.noOutlier;
   };
 
   return (
@@ -54,9 +63,19 @@ const SalesGraphModal = ({ isOpen, onRequestClose, heatmapSrc, scatterSrc, volum
           Show Volume Graph
         </label>
       </div>
-      {view === 'heatmap' && (heatmapSrc ? <img src={heatmapSrc} alt="Heatmap" /> : <p>Loading...</p>)}
-      {view === 'scatter' && (scatterSrc ? <img src={scatterSrc} alt="Scatter Plot" /> : <p>Loading...</p>)}
-      {view === 'volume' && (volumeSrc ? <img src={volumeSrc} alt="Volume Graph" /> : <p>Loading...</p>)}
+      <div>
+        <label>
+          <input
+            type="checkbox"
+            checked={showOutlier}
+            onChange={handleToggleOutlier}
+          />
+          Show Outliers
+        </label>
+      </div>
+      {view === 'heatmap' && (getCurrentSrc(heatmapSrc) ? <img src={getCurrentSrc(heatmapSrc)} alt="Heatmap" /> : <p>Loading...</p>)}
+      {view === 'scatter' && (getCurrentSrc(scatterSrc) ? <img src={getCurrentSrc(scatterSrc)} alt="Scatter Plot" /> : <p>Loading...</p>)}
+      {view === 'volume' && (getCurrentSrc(volumeSrc) ? <img src={getCurrentSrc(volumeSrc)} alt="Volume Graph" /> : <p>Loading...</p>)}
       <button onClick={onRequestClose}>Close</button>
     </Modal>
   );
