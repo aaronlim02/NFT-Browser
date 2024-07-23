@@ -7,7 +7,9 @@ import SalesGraphModal from './SalesGraphModal';
 const Results = ({ content, interval, resultsType, status }) => {
   const [collection, setCollection] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalImageSrc, setModalImageSrc] = useState(null);
+  const [heatmapSrc, setHeatmapSrc] = useState(null);
+  const [scatterSrc, setScatterSrc] = useState(null);
+  const [volumeSrc, setVolumeSrc] = useState(null);
 
   const getColor = (value) => {
     if (value > 0) return 'green';
@@ -19,14 +21,15 @@ const Results = ({ content, interval, resultsType, status }) => {
     color: getColor(num)
   });
 
-  const handleViewSaleGraph = async (name, slug) => {
+  const handleViewSaleGraph = async (name, slug, interval) => {
     try {
-      const response = await loadSalesGraph({ name, slug });
-      const { image } = response;
-      if (image) {
-        const imgSrc = `data:image/png;base64,${image}`;
+      const response = await loadSalesGraph({ name, slug, interval });
+      const { heatmap, scatter, volume } = response;
+      if (heatmap && scatter && volume) {
         setCollection(name);
-        setModalImageSrc(imgSrc);
+        setHeatmapSrc(`data:image/png;base64,${heatmap}`);
+        setScatterSrc(`data:image/png;base64,${scatter}`);
+        setVolumeSrc(`data:image/png;base64,${volume}`);
         setIsModalOpen(true);
       } else {
         alert('Failed to fetch sales graph');
@@ -150,7 +153,7 @@ const Results = ({ content, interval, resultsType, status }) => {
                       {String(Math.round(row[7][i]['volume_change'] * 1000) / 10) + "%"}
                     </p>
                   </td>
-                  <td><button onClick={() => handleViewSaleGraph(row[0], row[1])}>View</button></td>
+                  <td><button onClick={() => handleViewSaleGraph(row[0], row[1], Number(interval))}>View</button></td>
                   <td><button onClick={() => handleAddToWatchlist(row[0], row[1])}>Add</button></td>
                   <td><button onClick={() => handleAddToGallery(row[0], row[1])}>planning to delete</button></td>
                 </tr>
@@ -160,7 +163,9 @@ const Results = ({ content, interval, resultsType, status }) => {
           <SalesGraphModal
             isOpen={isModalOpen}
             onRequestClose={() => setIsModalOpen(false)}
-            imageSrc={modalImageSrc}
+            heatmapSrc={heatmapSrc}
+            scatterSrc={scatterSrc}
+            volumeSrc={volumeSrc}
             name={collection}
           />
         </div>

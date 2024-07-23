@@ -2,6 +2,8 @@ from flask import Flask, request, jsonify, send_file
 import matplotlib
 matplotlib.use('Agg')  # Use a non-GUI backend
 import matplotlib.pyplot as plt
+import matplotlib.colors as mcolors
+from matplotlib.dates import DateFormatter
 import io
 import base64
 import json
@@ -12,7 +14,7 @@ import time
 import os
 from dotenv import load_dotenv
 import sqlite3
-import datetime
+from datetime import datetime, timedelta
 from flask_socketio import SocketIO, emit
 # pls add in requirements
 import numpy as np
@@ -23,18 +25,11 @@ socketio = SocketIO(app, cors_allowed_origins="*")
 CORS(app)
 load_dotenv()
 
-# Dummy sales data for demonstration, pls replace with actual api call
-sales_data = {
-    "dates": pd.date_range(start="2024-01-01", periods=1000, freq='D').tolist(),
-    "price": np.random.uniform(low=0.1, high=5.0, size=1000).tolist(),
-    "currency": np.random.choice(["WETH", "ETH"], size=1000).tolist()
-}
-
 opensea_api_key = "d7bc517c25894772ae915ef729c8a443"
 alchemy_api_key = "Fn6XgY7SlhdqnbN09xv5QFenmRxaK0Ej"
 database_url = r"../database/database.sqlite"
 
-delay = 0.4
+delay = 0.0
 
 opensea_headers = {
     "accept": "application/json",
@@ -392,7 +387,7 @@ def notify_user(user_id, collection_slug, collection_name, floor_price):
     # Check if the notification already exists
     cursor.execute('SELECT * FROM notifications WHERE user_id = ? AND collection_slug = ?', (user_id, collection_slug))
     notification = cursor.fetchone()
-    formatted_now_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    formatted_now_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
     if notification:
         # Update the existing notification, only floor_price and updatedAt is updated
@@ -447,74 +442,170 @@ def get_notifications(user_id):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     
+###
+# sales graph endpoint
+###
+
+def iterate_sales(sales):
+    out = []
+    for sale in sales:
+        dt_object = datetime.fromtimestamp(sale["event_timestamp"])
+        out.append((dt_object, int(sale["payment"]["quantity"]) / 10**18, sale["payment"]["symbol"]))
+    return out
+
+def get_sales_amount_list(slug, start_time, cursor, results):
+    url = f"https://api.opensea.io/api/v2/events/collection/{slug}?after={start_time}&event_type=sale&limit=50&next={cursor}"
+    response = requests.get(url, headers=opensea_headers)
+    print("Sales request status code:", response.status_code)
+    data = response.json()
+    
+    sales = data.get('asset_events', [])
+    results.extend(iterate_sales(sales))
+    
+    next_cursor = data.get('next', '')
+    if next_cursor:
+        time.sleep(delay)
+        get_sales_amount_list(slug, start_time, next_cursor, results)
+    return results
+
+def get_sales_data(slug, x_days_ago):
+    today = datetime.today().replace(microsecond=0)
+    results = get_sales_amount_list(slug, today - timedelta(days=x_days_ago), '', [])
+    return results
+
 @app.route('/sales-graph/load', methods=['POST'])
 def sales_graph():
     data = request.json
-    
+
     name = data.get("name")
     slug = data.get("slug")
+    x_days_ago = data.get("interval")
 
-    dates = pd.to_datetime(sales_data["dates"])
-    sales = sales_data["price"]
-    currency = sales_data["currency"]
+    """
+    # Dummy sales data for demonstration, pls replace with actual api call
+    dummy_sales_data = {
+        "dates": pd.date_range(start="2022-01-01", periods=1000, freq='D').tolist(),
+        "price": np.random.uniform(low=0.1, high=5.0, size=1000).tolist(),
+        "currency": np.random.choice(["WETH", "ETH"], size=1000).tolist()
+    }
+    dates = pd.to_datetime(dummy_sales_data["dates"])
+    sales = dummy_sales_data["price"]
+    currency = dummy_sales_data["currency"]
+    """
+    real_sales_data = get_sales_data(slug, x_days_ago)
+    dates = [pd.to_datetime(item[0]) for item in real_sales_data]
+    sales = [item[1] for item in real_sales_data]
+    currency = [item[2] for item in real_sales_data]
+
+    # Convert dates to NumPy array and then to numeric for histogram
+    dates_numeric = np.array([date.value for date in dates])
 
     # bins
-    x_bins = np.linspace(min(dates).value, max(dates).value, 100)  # Convert datetime to numeric for histogram
-    y_bins = np.linspace(min(sales), max(sales), 50)
+    x_bins = np.linspace(min(dates_numeric), max(dates_numeric), 100)  # Convert datetime to numeric for histogram
+    y_bins = np.linspace(min(sales), max(sales), 40)
 
+    #1: create heatmap
     # Create a 2D histogram (binning the data)
-    histogram_data, x_edges, y_edges = np.histogram2d(dates.values.astype(float), sales, bins=(x_bins, y_bins))
+    histogram_data, x_edges, y_edges = np.histogram2d(dates_numeric, sales, bins=(x_bins, y_bins))
 
-    # Create the plot
-    fig, ax1 = plt.subplots(facecolor='#DDDDDD', figsize=(10, 5))
-
-    # Rotate the histogram data
+    # Create the heatmap plot with logarithmic color scale
+    fig_heatmap, ax1 = plt.subplots(facecolor='#DDDDDD', figsize=(10, 4))
     rotated_data = np.rot90(histogram_data)
-
-    # Create a colormap with a black color for undefined values
     cmap = plt.get_cmap('inferno')
     cmap.set_bad('black')
-
-    # Plot the heatmap
-    heatmap = ax1.imshow(rotated_data, cmap=cmap, interpolation='nearest', 
+    
+    norm = mcolors.LogNorm(vmin=0.5, vmax=rotated_data.max())
+    heatmap = ax1.imshow(rotated_data, cmap=cmap, norm=norm, interpolation='nearest', 
                          extent=[min(dates), max(dates), min(sales), max(sales)], 
                          aspect='auto', zorder=1)
-
-    # Set color and size for data points
-    point_size = 6
-    color_map = {'WETH': 'red', 'ETH': 'cyan'}
-    colors = [color_map[cat] for cat in currency]
-
-    # Plot the scatter plot on top of the heatmap
-    scatter = ax1.scatter(dates, sales, c=colors, marker='o', label='useless for now', 
-                          s=point_size, edgecolors='black', linewidths=0.5, zorder=2)
+    cbar = fig_heatmap.colorbar(heatmap, ax=ax1, label='Number of Sales', format='%d')
     
-    # Add colorbar
-    cbar = fig.colorbar(heatmap, ax=ax1, label='Number of Sales', format='%.0e')
-    # remove the exponent
-    cbar.set_ticklabels(cbar.get_ticks())
-    # Set the border color of the colorbar
-    cbar.outline.set_edgecolor('gray')
-    # Set the tickmark color of the colorbar
-    cbar.ax.tick_params(axis='y', color='gray', labelcolor='gray', which='minor')
-    cbar.ax.tick_params(axis='y', color='black', labelcolor='black', which='major')
+    # Set custom major ticks
+    major_ticks = [1, 2, 5, 10, 20, 50, 100, 200, 500]
+    adjusted_major_ticks = [tick for tick in major_ticks if tick <= rotated_data.max()]
+    if rotated_data.max() not in adjusted_major_ticks:
+        adjusted_major_ticks.append(rotated_data.max())
+    cbar.set_ticks(adjusted_major_ticks)
+    cbar.ax.minorticks_on()
+    cbar.ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: f'{int(x)}'))
 
+    cbar.outline.set_edgecolor('gray')
+    cbar.ax.tick_params(axis='y', color='gray', labelcolor='gray', which='minor', labelsize=0)
+    cbar.ax.tick_params(axis='y', color='black', labelcolor='black', which='major')
     ax1.tick_params(axis='y', colors='black')
     ax1.tick_params(axis='x', colors='black', rotation=15)
-
-    # Add labels and title
+    if x_days_ago < 7:
+        date_format = DateFormatter('%m-%d %H:%M')
+        ax1.xaxis.set_major_formatter(date_format)
     ax1.set_xlabel('time')
     ax1.set_ylabel('price (ETH)')
-
-    # Adjust layout to ensure labels are not cut off
     plt.tight_layout()
 
-    img = io.BytesIO()
-    fig.savefig(img, format='png')
-    img.seek(0)
-    img_base64 = base64.b64encode(img.getvalue()).decode()
+    img_heatmap = io.BytesIO()
+    fig_heatmap.savefig(img_heatmap, format='png')
+    img_heatmap.seek(0)
+    img_heatmap_base64 = base64.b64encode(img_heatmap.getvalue()).decode()
 
-    return jsonify({"image": img_base64})
+    #2: Create the scatter plot
+    fig_scatter, ax2 = plt.subplots(facecolor='#DDDDDD', figsize=(10, 4))
+    point_size = 9
+    color_map = {'WETH': 'red', 'ETH': 'cyan'}
+    colors = [color_map[cat] for cat in currency]
+    scatter = ax2.scatter(dates, sales, c=colors, marker='o', 
+                          s=point_size, edgecolors='black', linewidths=0.5, zorder=2)
+    
+    # Add grid
+    ax2.grid(True, linestyle='--', linewidth=0.5, color='gray')
+    
+    # Add legend for scatter plot
+    for label, color in color_map.items():
+        ax2.scatter([], [], c=color, edgecolors='black', s=point_size, label=label)
+    legend = ax2.legend(frameon=True, loc='best', framealpha=0.5, edgecolor='black')
+    legend.get_frame().set_facecolor('#EEEEEE')  # Light gray background
+    
+    ax2.tick_params(axis='y', colors='black')
+    ax2.tick_params(axis='x', colors='black', rotation=15)
+    if x_days_ago < 7:
+        date_format = DateFormatter('%m-%d %H:%M')
+        ax2.xaxis.set_major_formatter(date_format)
+    ax2.set_xlabel('time')
+    ax2.set_ylabel('price (ETH)')
+    plt.tight_layout()
+
+    img_scatter = io.BytesIO()
+    fig_scatter.savefig(img_scatter, format='png')
+    img_scatter.seek(0)
+    img_scatter_base64 = base64.b64encode(img_scatter.getvalue()).decode()
+
+    #3 Create the volume bar chart
+    df = pd.DataFrame({'dates': dates, 'sales': sales})
+    df['date'] = df['dates'].dt.date
+    if x_days_ago < 7:
+        volume_data = df.groupby(pd.Grouper(key='dates', freq='H'))['sales'].sum()
+        bar_width = 0.04
+        x_label = "Hour"
+    else:
+        volume_data = df.groupby('date')['sales'].sum()
+        bar_width = 1
+        x_label = "Date"
+    
+    fig_vol, ax3 = plt.subplots(facecolor='#DDDDDD', figsize=(10, 4))
+    ax3.bar(volume_data.index, volume_data.values, color='gray', width=bar_width, edgecolor='black')
+    ax3.tick_params(axis='y', colors='black')
+    ax3.tick_params(axis='x', colors='black', rotation=15)
+    if x_days_ago < 7:
+        date_format = DateFormatter('%m-%d %H:%M')
+        ax3.xaxis.set_major_formatter(date_format)
+    ax3.set_xlabel(x_label)
+    ax3.set_ylabel('Volume (ETH)')
+    plt.tight_layout()
+
+    img_vol = io.BytesIO()
+    fig_vol.savefig(img_vol, format='png')
+    img_vol.seek(0)
+    img_vol_base64 = base64.b64encode(img_vol.getvalue()).decode()
+
+    return jsonify({"heatmap": img_heatmap_base64, "scatter": img_scatter_base64, "volume": img_vol_base64})
 
 
 if __name__ == '__main__':
