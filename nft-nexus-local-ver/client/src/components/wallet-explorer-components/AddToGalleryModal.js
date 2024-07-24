@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import Modal from 'react-modal';
 import axios from 'axios';
 import { getToken } from '../../utils/auth';
-import './AddToGalleryModal.css';
 
 const AddToGalleryModal = ({ isOpen, onRequestClose, nft, galleries, onAdd }) => {
   const [selectedGallery, setSelectedGallery] = useState('');

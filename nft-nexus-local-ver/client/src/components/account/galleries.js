@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import Sidebar from './galleries-components/Sidebar';
 import MainContent from './galleries-components/Maincontent';
-import './galleries.css';
 
 const Galleries = () => {
   const [selectedGallery, setSelectedGallery] = useState(null);

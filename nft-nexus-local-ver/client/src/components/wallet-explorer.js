@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { searchWallet } from '../utils/api';
 import NFTDisplayGrid from './wallet-explorer-components/NFTDisplayGrid';
 import AddToGalleryModal from './wallet-explorer-components/AddToGalleryModal';
-import './wallet-explorer-components/NFTDisplayGrid.css';
 import axios from 'axios';
 import { getToken } from '../utils/auth';
 

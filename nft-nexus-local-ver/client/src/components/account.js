@@ -2,7 +2,6 @@
   import axios from 'axios';
   import { useNavigate } from 'react-router-dom';
   import { getToken, isAuthenticated } from '../utils/auth';
-  import "./account.css"
   import Dashboard from './account/dashboard';
   import Owned_NFTs from './account/owned-nfts';
   import Galleries from './account/galleries';

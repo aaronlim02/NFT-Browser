@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import './guides.css';
 import Sidebar from './guide-components/Sidebar';
 import MainContent from './guide-components/MainContent';
 

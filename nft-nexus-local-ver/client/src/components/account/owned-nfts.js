@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { searchWallet } from '../../utils/api';
 import NFTDisplayGrid from '../wallet-explorer-components/NFTDisplayGrid'
-import '../wallet-explorer-components/NFTDisplayGrid.css';
 
 const Owned_NFTs = ({ walletAddress }) => {
   const [output, setOutput] = useState([]);

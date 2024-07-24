@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import CollectionDisplay from './browse-nfts/CollectionDisplay'
 import { searchCollection } from '../utils/api';
-import './browse-nfts/CollectionDisplay.css';
 
 const Browse = () => {
   const [output, setOutput] = useState([]);

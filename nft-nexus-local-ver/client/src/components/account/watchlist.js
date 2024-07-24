@@ -4,7 +4,6 @@ import MainContent from './watchlist-components/MainContent';
 import Notifications from './watchlist-components/Notifications';
 import axios from 'axios';
 import { getToken } from '../../utils/auth';
-import './watchlist.css';
 
 const Watchlist = () => {
   const [watchlistData, setWatchlistData] = useState([]);

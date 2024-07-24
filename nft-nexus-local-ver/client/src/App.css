@@ -115,3 +115,632 @@ body {
     margin: 10px 0;
   }
 }
+
+/* account */
+/* - galleries.css */
+
+main {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.main-container {
+  display: flex;
+}
+
+.galleries-body {
+  flex: 1;
+  padding: 20px;
+  padding-left: 330px;
+}
+
+.sidebar {
+  width: 300px;
+  padding: 20px;
+  background-color: #f4f4f4;
+}
+
+.sidebar-buttons button {
+  display: block;
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 10px;
+  font-size: 16px;
+  cursor: pointer;
+  border: none;
+  background-color: #fff;
+  transition: background-color 0.3s;
+}
+
+.sidebar-buttons button:hover {
+  background-color: #ddd;
+}
+
+.sidebar-buttons button.selected {
+  background-color: #666;
+  color: white;
+}
+
+.sidebar-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5); /* Optional: For a dark background */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.sidebar-modal {
+  background: white;
+  padding: 20px;
+  border-radius: 4px;
+  max-width: 500px;
+  width: 100%;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  position: relative;
+  z-index: 1001;
+}
+
+.sidebar-modal-form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.sidebar-modal-form-button {
+  width: 100px;
+}
+
+.sidebar-modal-form-input {
+  width: 500px;
+  align-items: center;
+}
+
+.edit-delete-buttons {
+  display: none;
+  margin-left: auto;
+}
+
+.sidebar-button-container:hover .edit-delete-buttons {
+  display: flex;
+}
+
+.edit-delete-buttons button {
+  margin-left: 5px;
+  background: none;
+  border: none;
+  color: blue;
+  cursor: pointer;
+}
+
+.edit-delete-buttons button:hover {
+  text-decoration: underline;
+}
+
+.sidebar-modal-form-button {
+  margin: 5px;
+}
+
+/* grid */
+
+.gallery-grid-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px; /* Adjust the gap between grid items as needed */
+}
+
+.gallery-grid-item {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 16px;
+  max-width: 200px; /* Adjust max-width as needed */
+  text-align: center;
+}
+
+.gallery-grid-item img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
+
+.gallery-grid-item h3 {
+  font-size: 1.2em;
+  margin: 8px 0;
+}
+
+.gallery-grid-item p {
+  font-size: 1em;
+  margin: 8px 0;
+}
+
+.gallery-grid-item a {
+  display: inline-block;
+  margin: 8px 0;
+  color: #007bff;
+  text-decoration: none;
+}
+
+.gallery-grid-item button {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.gallery-grid-item button:hover {
+  background-color: #c82333;
+}
+
+.gallery-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  right: auto;
+  bottom: auto;
+  margin-right: -50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  width: 300px;
+  text-align: center;
+}
+
+.gallery-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.75);
+}
+
+.gallery-modal-form-button {
+  background-color: #333;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  cursor: pointer;
+  border-radius: 4px;
+  margin: 5px;
+}
+
+.gallery-modal-form-button:hover {
+  background-color: #666;
+}
+
+/* -settings.css */
+
+main {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.main-container {
+  display: flex;
+}
+
+.settings-body {
+  flex: 1;
+  padding: 20px;
+  padding-left: 330px;
+}
+
+input .your-wallet-address {
+  width: 300px;
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+/* -watchlist.css */
+
+main {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.main-container {
+  display: flex;
+}
+
+.watchlist-body {
+  flex: 1;
+  padding: 20px;
+  padding-left: 330px;
+}
+
+.watchlist-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.watchlist-table th {
+  border: 1px solid #ddd;
+  padding: 8px;
+  background-color: #f2f2f2;
+  text-align: left;
+}
+
+.watchlist-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+
+.watchlist-table tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.watchlist-table tr:hover {
+  background-color: #ddd;
+}
+
+.watchlist-table button {
+  padding: 5px 10px;
+  cursor: pointer;
+  border: none;
+  border-radius: 4px;
+}
+
+.watchlist-table .edit {
+  color: black;
+  background-color: rgb(210, 210, 210);
+}
+
+.watchlist-table .edit:hover {
+  background-color: rgb(180, 180, 180);
+}
+
+.watchlist-table .delete {
+  color: white;
+  background-color: rgb(199, 0, 0);
+}
+
+.watchlist-table .delete:hover {
+  background-color: rgb(149, 0, 0);
+}
+
+.notification-sub-header {
+  display: flex;
+  justify-content: space-between;
+}
+
+.notification-body {
+  flex: 1;
+  padding: 20px;
+  padding-left: 330px;
+}
+
+.notification-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.notification-table th {
+  border: 1px solid #ddd;
+  padding: 8px;
+  background-color: #f2f2f2;
+  text-align: left;
+}
+
+.notification-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+
+.notification-table tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.notification-table tr:hover {
+  background-color: #ddd;
+}
+
+.notification-body button {
+  padding: 5px 10px;
+  cursor: pointer;
+  border: none;
+  border-radius: 4px;
+}
+
+.notification-body .delete {
+  color: white;
+  background-color: rgb(199, 0, 0);
+}
+
+.notification-body .delete:hover {
+  background-color: rgb(149, 0, 0);
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5); /* Optional: For a dark background */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: white;
+  padding: 20px;
+  border-radius: 4px;
+  max-width: 500px;
+  width: 100%;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  position: relative;
+  z-index: 1001;
+}
+
+/* browse nfts */
+/* -CollectionDisplay.css */
+
+.colle_icon {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  margin: 0 10px;
+}
+
+.collection {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 20px;
+}
+
+.table-container {
+  margin: 0 20px;
+}
+
+.header input {
+  width: 500px;
+}
+
+.interval {
+  display: flex;
+  align-items: center;
+}
+
+/* -SalesGraphModal.css */
+
+/* Modal Styles */
+.ReactModal__Overlay {
+  background-color: rgba(0, 0, 0, 0.75) !important;
+}
+
+.ReactModal__Content {
+  max-width: 80%;
+  max-height: 80%;
+  overflow: auto;
+  border-radius: 8px;
+  padding: 20px;
+}
+
+/* wallet-explorer-components */
+/* -AddToGalleryModal.css */
+
+.add-to-gallery-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 400px;
+  padding: 20px;
+  background-color: #999;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.add-to-gallery-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: 'rgba(0, 0, 0, 0.75)';
+}
+
+/* -NFTDisplayGrid.css */
+
+.grid-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  padding: 20px;
+}
+
+.grid-item {
+border: 1px solid #ddd;
+padding: 10px;
+width: 300px;
+text-align: center;
+}
+
+.grid-item img {
+width: 290px;
+height: 290px;
+object-fit: contain;
+}
+
+.grid-item h3 {
+text-align: left;
+margin: 10px 0 5px;
+}
+
+.grid-item p {
+text-align: left;
+margin: 0 0 10px;
+}
+
+.grid-item a {
+color: #0066cc;
+text-decoration: none;
+}
+
+.grid-item a:hover {
+text-decoration: underline;
+}
+
+NFTDisplayGrid {
+display: flex;
+flex-direction: column;
+align-items: center;
+}
+
+.load-more {
+margin-top: 20px;
+font-size: 16px;
+color: #555;
+text-align: center;
+}
+
+/* account.css */
+
+.account-header {
+  padding: 1px 0px;
+  background-color: #f0f0f0; /* Optional: background color */
+  font-family: Arial, sans-serif; /* Optional: font style */
+  border-bottom: 1px solid grey; /* Bottom border only */
+}
+
+.account-info {
+  position: relative; /* Position absolutely within the container */
+  top: 10px; /* Position from the top */
+  margin-left: 20px;
+}
+
+.account-buttons {
+  cursor: pointer;
+  color: #7f7f7f;
+  text-decoration: none;
+  padding: 8px 20px;
+  border: 0px;
+  transition: #7f7f7f 0.3s ease;
+}
+
+.account-basic-info {
+  display: flex;
+}
+
+.account-wallet {
+  position: relative;
+  left: 10px;
+  top: 30px;
+}
+
+main {
+  margin-left: 20px;
+  margin-right: 20px;
+}
+
+.dashboard {
+  margin-left: 20px;
+  margin-right: 20px;
+}
+
+/* guides.css */
+
+main {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.main-container {
+  display: flex;
+}
+
+.sidebar {
+  position: fixed;
+  width: 300px;
+  height: 100vh;
+  background-color: #333;
+  color: #fff;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.guide-body {
+    flex: 1;
+    padding-left: 330px;
+    padding-right: 30px;
+    box-sizing: border-box;
+  }
+
+.sidebar button {
+  color: #fff;
+  background-color: #333;
+  text-align: left;
+  width: 200px;
+  padding: 8px 16px;
+  display: inline-block; /* Ensure the button is inline-block */
+  border: 0px;
+  transition: background-color 0.3s ease;
+}
+
+.sidebar button:hover {
+  background-color: #999999;
+  border-radius: 4px;
+}
+
+/* home.css */
+
+.image-container {
+  position: relative;
+  display: inline-block;
+}
+
+.homepage-featured .image-container img {
+  display: block;
+  width: 100vw;
+  height: auto;
+}
+
+.overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.5); /* Translucent black background */
+  color: white; /* Text color */
+  text-align: left;
+  padding: 10px;
+  font-size: 16px; /* Adjust as needed */
+  width: 300px;
+}
+
+.homepage-featured a {
+  color: lightblue
+}
+
+.collection-title {
+  font-size: x-large;
+}

@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { searchCollection } from '../utils/api';
-import './home.css';
 
 const Home = () => {
   const [output, setOutput] = useState([]);
