@@ -201,6 +201,24 @@ app.post('/settings/personal-details', authenticateToken, async (req, res) => {
   }
 });
 
+app.post('/settings/change-password', authenticateToken, async (req, res) => {
+  const { newPassword } = req.body;
+  const userId = req.user.userId;
+
+  try {
+    const hashedPassword = await bcryptjs.hash(newPassword, 10);
+
+    db.run('UPDATE users SET password = ? WHERE id = ?', [hashedPassword, userId], function(err) {
+      if (err) {
+        return res.status(500).json({ error: 'Server error, please try again later' });
+      }
+      return res.status(200).json({ message: 'Password updated successfully' });
+    });
+  } catch (error) {
+    return res.status(500).json({ error: 'Server error, please try again later' });
+  }
+});
+
 // watchlist //
 // add to watchlist
 app.post('/watchlist/add_from_nft_browser', authenticateToken, async (req, res) => {

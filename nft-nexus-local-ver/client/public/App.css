@@ -338,7 +338,20 @@ main {
   padding-left: 20px;
 }
 
-input .your-wallet-address {
+.settings-form {
+  background-color: #ccc;
+  padding: 5px;
+  border: 1px solid #666;
+  border-radius: 5px;
+}
+
+.settings-form-password-input {
+  display: flex;
+  flex-direction: column; /* Stack items vertically */
+  max-width: 200px;
+}
+
+input .settings-input {
   width: 300px;
   padding: 5px;
   border: 1px solid #ccc;

@@ -342,6 +342,13 @@ main {
   padding-left: 20px;
 }
 
+.settings-form {
+  background-color: #666;
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
 input .your-wallet-address {
   width: 300px;
   padding: 5px;
