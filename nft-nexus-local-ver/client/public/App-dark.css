@@ -36,6 +36,8 @@ body {
   color: #61dafb;
 }
 
+/* main */
+
 .center {
   text-align: center;
 }
@@ -48,7 +50,7 @@ body {
   margin-top: 0px;
   border-bottom: 1px solid grey;
   position: fixed;
-  background-color: rgba(255,255,255, 1);
+  background-color: rgba(50, 50, 50, 1);
 }
 
 .navbar .nav-links {
@@ -63,7 +65,7 @@ body {
 }
 
 .navbar .nav-links a {
-  color: #c0ffee;
+  color: white;
   text-decoration: none;
   padding: 8px 16px;
   display: inline-block; /* Ensure the button is inline-block */
@@ -320,22 +322,10 @@ main {
 
 /* -settings.css */
 
-main {
-  margin: 0;
-  padding: 0;
-  height: 100%;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.main-container {
-  display: flex;
-}
-
 .settings-body {
   flex: 1;
   padding: 20px;
-  padding-left: 330px;
+  padding-left: 20px;
 }
 
 input .your-wallet-address {

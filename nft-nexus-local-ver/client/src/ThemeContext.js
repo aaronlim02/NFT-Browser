@@ -7,24 +7,24 @@ export const ThemeProvider = ({ children }) => {
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
 
   useEffect(() => {
+    const existingLink = document.getElementById('theme-css');
+    if (existingLink) {
+      existingLink.remove();
+    }
+
     const link = document.createElement('link');
     link.rel = 'stylesheet';
     link.id = 'theme-css';
 
     if (theme === 'light') {
-      link.href = 'App.css';
+      link.href = '/App.css';
+      console.log('Applying light theme');
     } else {
-      link.href = 'App-dark.css';
+      link.href = '/App-dark.css';
+      console.log('Applying dark theme');
     }
 
     document.head.appendChild(link);
-
-    return () => {
-      const existingLink = document.getElementById('theme-css');
-      if (existingLink) {
-        existingLink.remove();
-      }
-    };
   }, [theme]);
 
   useEffect(() => {
