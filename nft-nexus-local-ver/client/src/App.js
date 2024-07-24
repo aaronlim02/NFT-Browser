@@ -21,7 +21,7 @@ const PrivateRoute = ({ element, ...rest }) => {
 function App() {
   return (
     <ThemeProvider>
-      <div>
+      <div className='master'>
         <header>
           <nav className="navbar">
             <PictureButton src="/images/random-logos/nft-nexus.png" alt="Home" to="/"/>

@@ -2,6 +2,14 @@ body {
   font-family: 'Roboto', sans-serif;
 }
 
+.master {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  color: white;
+  background-color: #333;
+}
+
 .main-body {
   padding-top: 56px; /* Add padding equal to navbar height */
 }
@@ -129,6 +137,16 @@ main {
   box-sizing: border-box;
 }
 
+.sidebar { /* guides also use this */
+  position: fixed;
+  width: 300px;
+  height: 100vh;
+  background-color: #333;
+  color: #fff;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
 .main-container {
   display: flex;
 }
@@ -137,12 +155,8 @@ main {
   flex: 1;
   padding: 20px;
   padding-left: 330px;
-}
-
-.sidebar {
-  width: 300px;
-  padding: 20px;
-  background-color: #f4f4f4;
+  color: #fff;
+  background-color: #666;
 }
 
 .sidebar-buttons button {
@@ -180,7 +194,8 @@ main {
 }
 
 .sidebar-modal {
-  background: white;
+  color: white;
+  background: #333;
   padding: 20px;
   border-radius: 4px;
   max-width: 500px;
@@ -265,7 +280,7 @@ main {
 .gallery-grid-item a {
   display: inline-block;
   margin: 8px 0;
-  color: #007bff;
+  color: #55a7ff;
   text-decoration: none;
 }
 
@@ -290,7 +305,6 @@ main {
   bottom: auto;
   margin-right: -50%;
   transform: translate(-50%, -50%);
-  background: white;
   padding: 20px;
   border-radius: 8px;
   width: 300px;
@@ -307,7 +321,7 @@ main {
 }
 
 .gallery-modal-form-button {
-  background-color: #333;
+  background-color: #666;
   color: white;
   border: none;
   padding: 8px 16px;
@@ -317,7 +331,7 @@ main {
 }
 
 .gallery-modal-form-button:hover {
-  background-color: #666;
+  background-color: #999;
 }
 
 /* -settings.css */
@@ -363,7 +377,7 @@ main {
 .watchlist-table th {
   border: 1px solid #ddd;
   padding: 8px;
-  background-color: #f2f2f2;
+  background-color: #666;
   text-align: left;
 }
 
@@ -373,11 +387,11 @@ main {
 }
 
 .watchlist-table tr:nth-child(even) {
-  background-color: #f9f9f9;
+  background-color: #555;
 }
 
 .watchlist-table tr:hover {
-  background-color: #ddd;
+  background-color: #999;
 }
 
 .watchlist-table button {
@@ -424,7 +438,7 @@ main {
 .notification-table th {
   border: 1px solid #ddd;
   padding: 8px;
-  background-color: #f2f2f2;
+  background-color: #666;
   text-align: left;
 }
 
@@ -434,7 +448,7 @@ main {
 }
 
 .notification-table tr:nth-child(even) {
-  background-color: #f9f9f9;
+  background-color: #555;
 }
 
 .notification-table tr:hover {
@@ -471,7 +485,8 @@ main {
 }
 
 .modal {
-  background: white;
+  color: white;
+  background: #333;
   padding: 20px;
   border-radius: 4px;
   max-width: 500px;
@@ -542,7 +557,8 @@ main {
   transform: translate(-50%, -50%);
   width: 400px;
   padding: 20px;
-  background-color: #999;
+  color: white;
+  background-color: #333;
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
@@ -566,55 +582,55 @@ main {
 }
 
 .grid-item {
-border: 1px solid #ddd;
-padding: 10px;
-width: 300px;
-text-align: center;
+  border: 1px solid #ddd;
+  padding: 10px;
+  width: 300px;
+  text-align: center;
 }
 
 .grid-item img {
-width: 290px;
-height: 290px;
-object-fit: contain;
+  width: 290px;
+  height: 290px;
+  object-fit: contain;
 }
 
 .grid-item h3 {
-text-align: left;
-margin: 10px 0 5px;
+  text-align: left;
+  margin: 10px 0 5px;
 }
 
 .grid-item p {
-text-align: left;
-margin: 0 0 10px;
+  text-align: left;
+  margin: 0 0 10px;
 }
 
 .grid-item a {
-color: #0066cc;
-text-decoration: none;
+  color: #2793ff;
+  text-decoration: none;
 }
 
 .grid-item a:hover {
-text-decoration: underline;
+  text-decoration: underline;
 }
 
 NFTDisplayGrid {
-display: flex;
-flex-direction: column;
-align-items: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .load-more {
-margin-top: 20px;
-font-size: 16px;
-color: #555;
-text-align: center;
+  margin-top: 20px;
+  font-size: 16px;
+  color: #888;
+  text-align: center;
 }
 
 /* account.css */
 
 .account-header {
   padding: 1px 0px;
-  background-color: #f0f0f0; /* Optional: background color */
+  background-color: #666; /* Optional: background color */
   font-family: Arial, sans-serif; /* Optional: font style */
   border-bottom: 1px solid grey; /* Bottom border only */
 }
@@ -627,11 +643,12 @@ text-align: center;
 
 .account-buttons {
   cursor: pointer;
-  color: #7f7f7f;
+  color: white;
+  background-color: #666;
   text-decoration: none;
   padding: 8px 20px;
   border: 0px;
-  transition: #7f7f7f 0.3s ease;
+  transition: white 0.3s ease;
 }
 
 .account-basic-info {
@@ -666,16 +683,6 @@ main {
 
 .main-container {
   display: flex;
-}
-
-.sidebar {
-  position: fixed;
-  width: 300px;
-  height: 100vh;
-  background-color: #333;
-  color: #fff;
-  padding: 20px;
-  box-sizing: border-box;
 }
 
 .guide-body {

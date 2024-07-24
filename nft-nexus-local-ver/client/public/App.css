@@ -2,6 +2,12 @@ body {
   font-family: 'Roboto', sans-serif;
 }
 
+.master {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
 .main-body {
   padding-top: 56px; /* Add padding equal to navbar height */
 }
@@ -139,10 +145,14 @@ main {
   padding-left: 330px;
 }
 
-.sidebar {
+.sidebar { /* guides also use this */
+  position: fixed;
   width: 300px;
+  height: 100vh;
+  background-color: #333;
+  color: #fff;
   padding: 20px;
-  background-color: #f4f4f4;
+  box-sizing: border-box;
 }
 
 .sidebar-buttons button {
@@ -666,16 +676,6 @@ main {
 
 .main-container {
   display: flex;
-}
-
-.sidebar {
-  position: fixed;
-  width: 300px;
-  height: 100vh;
-  background-color: #333;
-  color: #fff;
-  padding: 20px;
-  box-sizing: border-box;
 }
 
 .guide-body {

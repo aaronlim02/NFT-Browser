@@ -11,7 +11,7 @@ const Galleries = () => {
 
   return (
     <main>
-      <div className="main-container">
+      <div className="galleries-main-container">
         <Sidebar onSidebarClick={handleSidebarClick} selectedGallery={selectedGallery} />
         <MainContent selectedGallery={selectedGallery} />
       </div>
