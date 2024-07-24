@@ -63,7 +63,7 @@ body {
 }
 
 .navbar .nav-links a {
-  color: #7f7f7f;
+  color: #c0ffee;
   text-decoration: none;
   padding: 8px 16px;
   display: inline-block; /* Ensure the button is inline-block */
@@ -320,10 +320,22 @@ main {
 
 /* -settings.css */
 
+main {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.main-container {
+  display: flex;
+}
+
 .settings-body {
   flex: 1;
   padding: 20px;
-  padding-left: 20px;
+  padding-left: 330px;
 }
 
 input .your-wallet-address {

@@ -101,66 +101,101 @@ app.post('/process-data', authenticateToken, async (req, res) => {
   }
 });
 
-// retrieve account name
+// retrieve account stuff
 app.get('/api/account', authenticateToken, async (req, res) => {
   try {
     const userId = req.user.userId; // id in users
-    // Retrieve username from 'users' table
-    db.get('SELECT * FROM users WHERE id = ?', [userId], (err, row) => {
-      if (err) { throw err; }
-      if (!row) { return res.status(404).json({ error: 'User not found' }); }
+    const userQuery = 'SELECT * FROM users WHERE id = ?';
+    const walletQuery = 'SELECT * FROM settings WHERE user_id = ? AND setting_key = "wallet-address"';
+    const themeQuery = 'SELECT * FROM settings WHERE user_id = ? AND setting_key = "light-dark-mode"';
 
-      const username = row.username;
-
-      // Retrieve 'wallet-address' setting from 'settings' table
-      db.get('SELECT * FROM settings WHERE user_id = ? AND setting_key = ?', [userId, 'wallet-address'], (err, row) => {
-        if (err) { throw err; }
-
-        if (!row) {
-          res.json({ username: username, address: null });
-        } else {
-          res.json({ username: username, address: row.setting_value });
-        }
+    const getUser = () => new Promise((resolve, reject) => {
+      db.get(userQuery, [userId], (err, row) => {
+        if (err) reject(err);
+        resolve(row);
       });
     });
-    
+
+    const getWallet = () => new Promise((resolve, reject) => {
+      db.get(walletQuery, [userId], (err, row) => {
+        if (err) reject(err);
+        resolve(row ? row.setting_value : null);
+      });
+    });
+
+    const getTheme = () => new Promise((resolve, reject) => {
+      db.get(themeQuery, [userId], (err, row) => {
+        if (err) reject(err);
+        resolve(row ? row.setting_value : 'light');
+      });
+    });
+
+    const [user, address, lightDarkMode] = await Promise.all([getUser(), getWallet(), getTheme()]);
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.status(200).json({ username: user.username, address, lightDarkMode });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
 app.post('/settings/personal-details', authenticateToken, async (req, res) => {
-  const { yourWalletAddress } = req.body;
+  const { yourWalletAddress, lightDarkMode } = req.body;
   const userId = req.user.userId;
-  try {
-    // Check if the preference already exists
-    db.get('SELECT * FROM settings WHERE user_id = ? AND setting_key = ?', [userId, 'wallet-address'], async (err, row) => {
-      if (err) { throw err; }
+
+  const updateOrInsertSetting = (key, value) => new Promise((resolve, reject) => {
+    db.get('SELECT * FROM settings WHERE user_id = ? AND setting_key = ?', [userId, key], (err, row) => {
+      if (err) return reject(err);
+
+      if (value.length == 0) {
+        return resolve();
+      }
 
       if (row) {
-        // Preference exists, update
-        db.run('UPDATE settings SET setting_value = ? WHERE user_id = ? AND setting_key = ?', [yourWalletAddress, userId, 'wallet-address'], function(err) {
-          if (err) { throw err; }
-
-          // Fetch the updated record
-          db.get('SELECT * FROM settings WHERE user_id = ? AND setting_key = ?', [userId, 'wallet-address'], (err, updatedRow) => {
-            if (err) { throw err; }
-            res.status(200).json(updatedRow);
-          });
+        db.run('UPDATE settings SET setting_value = ? WHERE user_id = ? AND setting_key = ?', [value, userId, key], function (err) {
+          if (err) reject(err);
+          resolve();
         });
       } else {
-        // Preference does not exist, insert
-        db.run('INSERT INTO settings (user_id, setting_key, setting_value) VALUES (?, ?, ?)', [userId, 'wallet-address', yourWalletAddress], function(err) {
-          if (err) { throw err; }
-
-          // Fetch the inserted record
-          db.get('SELECT * FROM settings WHERE user_id = ? AND setting_key = ?', [userId, 'wallet-address'], (err, insertedRow) => {
-            if (err) { throw err; }
-            res.status(201).json(insertedRow);
-          });
+        db.run('INSERT INTO settings (user_id, setting_key, setting_value) VALUES (?, ?, ?)', [userId, key, value], function (err) {
+          if (err) reject(err);
+          resolve();
         });
       }
     });
+  });
+
+  try {
+    await Promise.all([
+      updateOrInsertSetting('wallet-address', yourWalletAddress),
+      updateOrInsertSetting('light-dark-mode', lightDarkMode)
+    ]);
+
+    const fetchUpdatedSettings = () => new Promise((resolve, reject) => {
+      db.all('SELECT * FROM settings WHERE user_id = ? AND setting_key IN ("wallet-address", "light-dark-mode")', [userId], (err, rows) => {
+        if (err) reject(err);
+        resolve(rows);
+      });
+    });
+
+    const updatedRows = await fetchUpdatedSettings();
+    const response = {
+      walletAddress: null,
+      lightDarkMode: null
+    };
+
+    updatedRows.forEach(row => {
+      if (row.setting_key === 'wallet-address') {
+        response.walletAddress = row.setting_value;
+      } else if (row.setting_key === 'light-dark-mode') {
+        response.lightDarkMode = row.setting_value;
+      }
+    });
+
+    res.status(200).json(response);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
