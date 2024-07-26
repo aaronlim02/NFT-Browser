@@ -14,9 +14,14 @@ const Home = () => {
       setOutput(response.output);
       console.log('Processed data:', response);
     } catch (error) {
-      setStatus('500');
       setIsPythonInstalled(false);
-      console.error('Error fetching collections:', error);
+      console.error('Error fetching collections:', error.response);
+      if (error.response) {
+        setStatus('500');
+        alert("An error occured while trying to load Python.")
+      } else {
+        setStatus('501');
+      }
     }
   }, []);
 
@@ -69,9 +74,13 @@ const Home = () => {
         <div class="python-screen-of-death">
           <div class="psod-message">
             <h2>PYTHON SCREEN OF DEATH :(</h2>
-            <p>If you are seeing this screen, it means that Python is not installed properly in this application. Python is required for most of the features in this application to function.</p>
+            <p>If you are seeing this screen, it means that the Python server could not run properly. Python is required for most of the features in this application to function.</p>
+            <h3>Issue:</h3>
+            {status === "501" ? <p>Missing/Invalid Python installation</p> : <p>Internal error while trying to run Python program</p>}
             <h3>What to do:</h3>
-            <p>If you haven't installed Python yet, please do so <a class="psod-a" href="https://www.python.org/downloads/">here.</a> Afterwards, reinstall this application and repeat all the steps in the <a class="psod-a" href="https://github.com/aaronlim02/NFT-Browser">README.</a></p>
+            {status === "501" ? 
+            <p>If you haven't installed Python yet, please do so <a class="psod-a" href="https://www.python.org/downloads/">here.</a> Afterwards, reinstall this application and repeat all the steps in the <a class="psod-a" href="https://github.com/aaronlim02/NFT-Browser">README.</a> You might also want to <a class="psod-a" href="https://www.google.com/search?q=how+to+add+python+to+path">add Python to PATH.</a></p>
+            : <p>It seems that you have already installed Python, however an internal server error has occured. Please try again later. If issues persist, you might want to try <a class="psod-a" href="https://www.python.org/downloads/">reinstalling Python</a> and this application.</p>}
           </div>
         </div>
         

@@ -40,23 +40,38 @@ const jwtSecretKey = process.env.JWT_SECRET;
 app.post('/register', async (req, res) => {
   const { username, password } = req.body;
   const hashedPassword = await bcryptjs.hash(password, 10);
-  try {
-    const sql = 'INSERT INTO users (username, password) VALUES (?, ?)';
-    const params = [username, hashedPassword];
 
-    db.run(sql, params, function(err) {
+  try {
+    // Check if the username already exists
+    db.get('SELECT * FROM users WHERE username = ?', [username], (err, row) => {
       if (err) {
         console.error(err.message);
         return res.status(500).json({ error: err.message });
       }
 
-      // Get the inserted user
-      db.get('SELECT * FROM users WHERE id = ?', [this.lastID], (err, user) => {
+      if (row) {
+        // Username already exists
+        return res.status(409).json({ error: 'User already exists' });
+      }
+
+      // Insert the new user
+      const sql = 'INSERT INTO users (username, password) VALUES (?, ?)';
+      const params = [username, hashedPassword];
+
+      db.run(sql, params, function(err) {
         if (err) {
           console.error(err.message);
           return res.status(500).json({ error: err.message });
         }
-        res.status(201).json(user);
+
+        // Get the inserted user
+        db.get('SELECT * FROM users WHERE id = ?', [this.lastID], (err, user) => {
+          if (err) {
+            console.error(err.message);
+            return res.status(500).json({ error: err.message });
+          }
+          res.status(201).json(user);
+        });
       });
     });
   } catch (err) {
