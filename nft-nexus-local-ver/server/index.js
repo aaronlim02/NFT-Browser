@@ -465,10 +465,6 @@ app.post('/gallery-items/add', authenticateToken, async (req, res) => {
 
   try {
     // Check if the item already exists in the user's watchlist
-    logger.info(gallery_id);
-    logger.info(contract_addr);
-    logger.info(token_id);
-    logger.info(collection_name);
     db.get('SELECT * FROM gallery_items WHERE gallery_id = ? AND contract_addr = ? AND token_id = ?', [gallery_id, contract_addr, token_id], (err, row) => {
       if (err) {
         throw err;

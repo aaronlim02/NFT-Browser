@@ -94,7 +94,6 @@ def get_nfts_acc(acc, cursor): # get nfts from account
     else:
         nfts = []
         url = f"https://api.opensea.io/api/v2/chain/ethereum/account/{acc}/nfts?limit=100"
-    print(url)
     response = requests.get(url, headers=opensea_headers)
     print("get nft code:", response.status_code)
     data = response.json()
@@ -137,7 +136,6 @@ def get_nfts_listed_acc(acc, cursor): # get nfts from acc
     else:
         nfts = []
         url = f"https://api.opensea.io//api/v2/orders/ethereum/seaport/listings?limit=50&maker={acc}"
-    print(url)
     response = requests.get(url, headers=opensea_headers)
     print("get nft code:", response.status_code)
     data = response.json()
@@ -156,7 +154,6 @@ def alchemy_process(nfts):
                       "tokenId": nft[1],
                       "tokenType": nft[2]})
         
-    print(input)
     url = f"https://eth-mainnet.g.alchemy.com/nft/v3/{alchemy_api_key}/getNFTMetadataBatch"
     payload = {"tokens": input, "refreshCache": False}
     headers = {
@@ -195,7 +192,6 @@ def alchemy_process_2(nfts):
                       "tokenId": nft[2],
                       "tokenType": nft[3]})
         
-    print(input)
     url = f"https://eth-mainnet.g.alchemy.com/nft/v3/{alchemy_api_key}/getNFTMetadataBatch"
     payload = {"tokens": input, "refreshCache": False}
     headers = {
@@ -273,7 +269,6 @@ def load_collections(cursor, sort, count): # get collections
     else:
         collections = []
         url = f"https://api.opensea.io/api/v2/collections?chain=ethereum&limit={count}&order_by={sort}"
-    print(url)
     response = requests.get(url, headers=opensea_headers)
     print("load collections code:", response.status_code)
     data = response.json()
