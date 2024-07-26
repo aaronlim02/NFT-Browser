@@ -4,6 +4,7 @@ import NFTDisplayGrid from './wallet-explorer-components/NFTDisplayGrid';
 import AddToGalleryModal from './wallet-explorer-components/AddToGalleryModal';
 import axios from 'axios';
 import { getToken } from '../utils/auth';
+import { isValidWalletAddress } from '../utils/otherutils';
 
 const WalletExplorer = () => {
   const [output, setOutput] = useState([]);
@@ -34,7 +35,7 @@ const WalletExplorer = () => {
 
   const handleProcessData = useCallback(async (source) => {
     if (source === 'search') {
-      if (walletAddress.length !== 42) {
+      if (!isValidWalletAddress(walletAddress)) {
         setOutput("400");
         setStatus("not-loading");
         return;

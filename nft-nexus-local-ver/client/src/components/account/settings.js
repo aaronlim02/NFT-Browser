@@ -89,6 +89,7 @@ const PersonalDetails = () => {
         <p></p>
         <button type="submit">Submit</button>
       </form>
+      <p></p>
       <form class="settings-form" onSubmit={handleSubmitPassword}>
         <div class="settings-form-password-input">
           <h2>Password</h2>
@@ -98,6 +99,7 @@ const PersonalDetails = () => {
             value={newPassword}
             placeholder='New Password'
             onChange={(e) => setNewPassword(e.target.value)}
+            required
           />
           <label>Confirm New Password: </label>
           <input class="settings-input"
@@ -105,6 +107,7 @@ const PersonalDetails = () => {
             value={confirmPassword}
             placeholder='Confirm New Password'
             onChange={(e) => setConfirmPassword(e.target.value)}
+            required
           />
         </div>
         <p></p>

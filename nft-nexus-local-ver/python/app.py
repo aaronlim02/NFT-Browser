@@ -350,7 +350,10 @@ def load_collection():
 @app.route('/wallet-stats', methods=['POST'])
 def load_wallet():
     input_data = request.get_json()
-    wallet_address = input_data['walletAddress']['walletAddress']
+    wallet_address = input_data['walletAddress']
+    if not wallet_address:
+        processed_data = {'message': 'Please input wallet address in settings!'}
+        return jsonify(processed_data)
     url = f"https://eth-mainnet.g.alchemy.com/v2/{alchemy_api_key}"
     payload = {
         "id": 1,

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { walletStats } from '../../utils/api';
+import { isValidWalletAddress } from '../../utils/otherutils';
 
 const Dashboard = (walletAddress) => {
 
@@ -8,9 +9,10 @@ const Dashboard = (walletAddress) => {
 
   const handleProcessData = async () => {
     try {
-      const data = { walletAddress };
-      const response = await walletStats(data);
-      setOutput(response.output);
+      if (isValidWalletAddress(walletAddress.walletAddress)) {
+        const response = await walletStats(walletAddress);
+        setOutput(response.output);
+      }
     } catch (error) {
       console.error('Error fetching account data:', error);
     }
@@ -34,7 +36,9 @@ const Dashboard = (walletAddress) => {
   return (
     <div className="dashboard">
     <h2>Overview </h2>
-    <p>ETH Balance: {Number(output)} ETH </p>
+    {isValidWalletAddress(walletAddress.walletAddress) ? 
+      <p>ETH Balance: {Number(output)} ETH </p> : 
+      <p>ETH Balance: Please input valid wallet address in settings! </p>}
   </div>
   )
 }
