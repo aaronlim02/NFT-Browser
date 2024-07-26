@@ -378,6 +378,10 @@ main {
   padding-left: 330px;
 }
 
+.watchlist-input {
+  width: 500px;
+}
+
 .watchlist-table {
   width: 100%;
   border-collapse: collapse;

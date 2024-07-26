@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import Modal from 'react-modal';
 import { getToken } from '../../../utils/auth';
 import axios from 'axios';
+import { getCollectionName } from '../../../utils/api';
 
 Modal.setAppElement('#root'); // Set the app root for accessibility
 
@@ -9,6 +10,7 @@ const MainContent = ({ watchlistData, error, isLoading, setWatchlistData }) => {
   const [editItem, setEditItem] = useState(null);
   const [newPrice, setNewPrice] = useState('');
   const [modalIsOpen, setIsOpen] = useState(false);
+  const [newLink, setNewLink] = useState('');
 
   const openModal = (item) => {
     setEditItem(item);
@@ -53,6 +55,41 @@ const MainContent = ({ watchlistData, error, isLoading, setWatchlistData }) => {
     }
   };
 
+  const handleAddLink = async () => {
+
+    // Process the link here before making the API call
+
+    // try to parse url and get slug
+    let slug = "";
+    try {
+      const url = newLink;
+      const parts = url.split('/');
+      console.log(parts);
+      const index = parts.indexOf('collection');
+      slug = parts[index + 1];
+      console.log(slug);
+    } catch {
+      alert("Invalid URL!");
+      return;
+    }
+
+    const name = await getCollectionName({slug: slug})
+
+    const token = getToken();
+    try {
+      const response = await axios.post('http://localhost:5000/watchlist/add_from_nft_browser', 
+        { name, slug },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      console.log('Added to watchlist:', response.data);
+      alert(`Added ${name} to watchlist`);
+      setWatchlistData((prevData) => [...prevData, response.data]);
+    } catch (error) {
+      console.error('Error adding to watchlist:', error);
+      alert(`${error.response.data.error}`);
+    }
+  };
+
   if (isLoading) {
     return <div className="watchlist-body">Loading...</div>;
   }
@@ -65,6 +102,13 @@ const MainContent = ({ watchlistData, error, isLoading, setWatchlistData }) => {
     <div className="watchlist-body">
       <h2>My Watchlist</h2>
       <p>{watchlistData.length} items</p>
+      <input className="watchlist-input"
+        type="text" 
+        value={newLink} 
+        onChange={(e) => setNewLink(e.target.value)} 
+        placeholder="Enter Opensea link to add to watchlist or alternatively add from 'Browse NFTs'."
+      />
+      <button onClick={handleAddLink}>Add</button>
       <table className="watchlist-table">
         <thead>
           <tr>

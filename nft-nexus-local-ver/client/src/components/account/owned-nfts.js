@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { searchWallet } from '../../utils/api';
 import NFTDisplayGrid from '../wallet-explorer-components/NFTDisplayGrid'
+import AddToGalleryModal from '../wallet-explorer-components/AddToGalleryModal';
+import axios from 'axios';
+import { getToken } from '../../utils/auth';
 
 const Owned_NFTs = ({ walletAddress }) => {
   const [output, setOutput] = useState([]);
@@ -8,6 +11,25 @@ const Owned_NFTs = ({ walletAddress }) => {
   const [hasMore, setHasMore] = useState(false);
   const [mode, setMode] = useState('default');
   const [isLoading, setIsLoading] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedNFT, setSelectedNFT] = useState(null);
+  const [galleries, setGalleries] = useState([]);
+
+  useEffect(() => {
+    const fetchGalleries = async () => {
+      try {
+        const token = getToken();
+        const response = await axios.get('http://localhost:5000/galleries/retrieve_from_account', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setGalleries(response.data);
+      } catch (error) {
+        console.error('Error fetching galleries:', error);
+      }
+    };
+
+    fetchGalleries();
+  }, []);
 
   const handleProcessData = useCallback(async (source) => {
     setIsLoading(true);
@@ -55,6 +77,24 @@ const Owned_NFTs = ({ walletAddress }) => {
     handleProcessData('search');
   };
 
+  const handleAddToGalleryClick = (nft) => {
+    setSelectedNFT(nft);
+    setIsModalOpen(true);
+  };
+
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    setSelectedNFT(null);
+  };
+
+  const handleAdd = (newItem, error) => {
+    if (error) {
+      alert(`Error: ${error}`);
+    } else {
+      alert(`Item ${newItem.collection_name} added successfully!`);
+    }
+  };
+
   return (
     <main>
       <p align="center">Set parameters to view your wallet:</p>
@@ -71,11 +111,20 @@ const Owned_NFTs = ({ walletAddress }) => {
 
         <button type="submit">Search</button>
       </form>
-      {isLoading ? <p>Loading...</p> : <NFTDisplayGrid content={output} mode={mode} />}
+      {isLoading ? <p>Loading...</p> : <NFTDisplayGrid content={output} mode={mode} onAddToGalleryClick={handleAddToGalleryClick} />}
       {hasMore && (
         <div className="load-more">
           <p>Scroll to reveal more NFTs...</p>
         </div>
+      )}
+      {selectedNFT && (
+        <AddToGalleryModal
+          isOpen={isModalOpen}
+          onRequestClose={handleModalClose}
+          nft={selectedNFT}
+          galleries={galleries}
+          onAdd={handleAdd}
+        />
       )}
     </main>
   );

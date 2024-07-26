@@ -54,3 +54,13 @@ export const loadSalesGraph = async (data) => {
     throw error;
   }
 };
+
+export const getCollectionName = async (data) => {
+  try {
+    const response = await api.post('/get-collection-name', (data));
+    return response.data;
+  } catch (error) {
+    console.error('Error processing data:', error);
+    throw error;
+  }
+};

@@ -298,6 +298,7 @@ main {
 }
 
 .gallery-modal {
+  color: white;
   position: fixed;
   top: 50%;
   left: 50%;
@@ -374,6 +375,10 @@ main {
   flex: 1;
   padding: 20px;
   padding-left: 330px;
+}
+
+.watchlist-input {
+  width: 500px;
 }
 
 .watchlist-table {
@@ -506,6 +511,10 @@ main {
 /* browse nfts */
 /* -CollectionDisplay.css */
 
+.collection a {
+  color: #55a7ff;
+}
+
 .colle_icon {
   width: 64px;
   height: 64px;
@@ -612,7 +621,7 @@ main {
 }
 
 .grid-item a {
-  color: #2793ff;
+  color: #55a7ff;
   text-decoration: none;
 }
 

@@ -39,6 +39,23 @@ opensea_headers = {
 
 alchemy_headers = {"accept": "application/json"}
 
+# get collection name
+
+@app.route('/get-collection-name', methods=['POST'])
+def get_collection_name():
+    slug = request.json.get('slug')
+    if not slug:
+        return jsonify({"error": "Slug not provided"}), 400
+    try:
+        url = f"https://api.opensea.io/api/v2/collections/{slug}"
+        response = requests.get(url, headers=opensea_headers)
+        print("get name code:", response.status_code)
+        data = response.json()
+        name = data["name"]
+        return jsonify(name)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 # get nft from account api
 
 def iterate_get_nfts(nfts_raw): # iterate getting nft out of json
