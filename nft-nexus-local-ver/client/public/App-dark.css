@@ -731,6 +731,22 @@ main {
   display: inline-block;
 }
 
+.python-screen-of-death {
+  width: 200px; /* Set the width of the rectangle */
+  height: 100px; /* Set the height of the rectangle */
+  background-color: blue; /* Set the background color */
+  border: 2px solid #000; /* Optional: Add a border around the rectangle */
+  margin: 20px; /* Optional: Add some space around the rectangle */
+}
+
+.psod-message {
+  color:white
+}
+
+.psod-a {
+  color:#55a7ff
+}
+
 .homepage-featured .image-container img {
   display: block;
   width: 100vw;
