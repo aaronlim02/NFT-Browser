@@ -55,6 +55,25 @@ def get_collection_name():
         return jsonify(name)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
+# get item name
+
+@app.route('/get-item-name', methods=['POST'])
+def get_item_name():
+    data_input = request.json
+    contract = data_input.get('contract')
+    item_id = data_input.get("item_id")
+    if not contract or not item_id:
+        return jsonify({"error": "Item not provided"}), 400
+    try:
+        url = f"https://api.opensea.io/api/v2/chain/ethereum/contract/{contract}/nfts/{item_id}"
+        response = requests.get(url, headers=opensea_headers)
+        print("get item code:", response.status_code)
+        data = response.json()
+        name = data["nft"]["name"]
+        return jsonify(name)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 # get nft from account api
 

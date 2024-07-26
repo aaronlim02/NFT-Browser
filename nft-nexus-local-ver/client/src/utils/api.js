@@ -64,3 +64,13 @@ export const getCollectionName = async (data) => {
     throw error;
   }
 };
+
+export const getItemName = async (data) => {
+  try {
+    const response = await api.post('/get-item-name', (data));
+    return response.data;
+  } catch (error) {
+    console.error('Error processing data:', error);
+    throw error;
+  }
+};

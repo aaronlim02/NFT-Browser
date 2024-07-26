@@ -57,8 +57,6 @@ const MainContent = ({ watchlistData, error, isLoading, setWatchlistData }) => {
 
   const handleAddLink = async () => {
 
-    // Process the link here before making the API call
-
     // try to parse url and get slug
     let slug = "";
     try {
@@ -67,7 +65,6 @@ const MainContent = ({ watchlistData, error, isLoading, setWatchlistData }) => {
       console.log(parts);
       const index = parts.indexOf('collection');
       slug = parts[index + 1];
-      console.log(slug);
     } catch {
       alert("Invalid URL!");
       return;
@@ -102,11 +99,11 @@ const MainContent = ({ watchlistData, error, isLoading, setWatchlistData }) => {
     <div className="watchlist-body">
       <h2>My Watchlist</h2>
       <p>{watchlistData.length} items</p>
-      <input className="watchlist-input"
+      <input className="add-to-watchlist-gallery-input"
         type="text" 
         value={newLink} 
         onChange={(e) => setNewLink(e.target.value)} 
-        placeholder="Enter Opensea link to add to watchlist or alternatively add from 'Browse NFTs'."
+        placeholder="Enter Opensea link of the collection to add to watchlist or alternatively add from 'Browse NFTs'."
       />
       <button onClick={handleAddLink}>Add</button>
       <table className="watchlist-table">
