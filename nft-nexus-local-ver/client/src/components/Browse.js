@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import CollectionDisplay from './browse-nfts/CollectionDisplay'
+import CollectionDisplay from './browse-nfts/CollectionDisplay';
 import { searchCollection } from '../utils/api';
 
 const Browse = () => {
@@ -40,7 +40,7 @@ const Browse = () => {
       setStatus('500');
       console.error('Error fetching collections:', error);
     }
-  }, [collection, sort, hasMore, resultsType, status]);
+  }, [collection, sort]);
 
   useEffect(() => {
     // Function to fetch data from the API
@@ -48,32 +48,29 @@ const Browse = () => {
       if (!fetchDataCalledRef.current) {
         fetchDataCalledRef.current = true;
         try {
-          handleProcessData('load');
+          await handleProcessData('load');
         } catch (err) {
           setOutput(["error"]);
         }
-      };
-    }
+      }
+    };
     fetchData();
-  }, []);
+  }, [handleProcessData]);
 
   useEffect(() => {
     const handleScroll = async () => {
       // Check if the user has scrolled to the bottom of the page
-      if (window.innerHeight + document.documentElement.scrollTop !== document.documentElement.offsetHeight || !hasMore) return;
-      
-      // If the user has scrolled to the bottom and there are more NFTs to load, load more NFTs
-      if (status === '200') {
+      if (window.innerHeight + document.documentElement.scrollTop >= document.documentElement.offsetHeight - 5 && hasMore && status === '200') {
         await handleProcessData('scroll');
       }
     };
 
     // Add the scroll event listener to the window object
     window.addEventListener('scroll', handleScroll);
-    
+
     // Cleanup function to remove the event listener when the component is unmounted or dependencies change
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [handleProcessData, hasMore]);
+  }, [handleProcessData, hasMore, status]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -82,39 +79,36 @@ const Browse = () => {
 
   return (
     <main>
-      <div class="header">
+      <div className="header">
         <form className="center" onSubmit={handleSubmit}>
           <input 
             type="text" 
             placeholder="Type to search collections or leave empty to search all..."
             value={collection}
             onChange={(e) => {
-                setCollection(e.target.value);
-                setHasMore(false);
-              }
-            }
+              setCollection(e.target.value);
+              setHasMore(false);
+            }}
           />
           <select 
-          value={sort}
-          onChange={(e) => {
-            setSort(e.target.value);
-            setHasMore(false);
-            }
-          }
-        >
-          <option value="">Select sort... (only works with search-all)</option>
-          <option value="market_cap">Market Cap</option>
-          <option value="num_owners">Number of Owners</option>
-          <option value="one_day_change">1-Day Change</option>
-          <option value="seven_day_change">7-Day Change</option>
-          <option value="seven_day_volume">7-Day Volume</option>
-        </select>
-          <button type="submit" 
-          disabled={status === "loading" || status === "loading-more"}>
+            value={sort}
+            onChange={(e) => {
+              setSort(e.target.value);
+              setHasMore(false);
+            }}
+          >
+            <option value="">Select sort... (only works with search-all)</option>
+            <option value="market_cap">Market Cap</option>
+            <option value="num_owners">Number of Owners</option>
+            <option value="one_day_change">1-Day Change</option>
+            <option value="seven_day_change">7-Day Change</option>
+            <option value="seven_day_volume">7-Day Volume</option>
+          </select>
+          <button type="submit" disabled={status === "loading" || status === "loading-more"}>
             Search
           </button>
         </form>
-        <div class="interval">
+        <div className="interval">
           <p>Select interval:</p>
           <select
             value={interval}
@@ -129,9 +123,9 @@ const Browse = () => {
       
       <CollectionDisplay content={output} interval={interval} resultsType={resultsType} status={status}/>
       {hasMore && (
-      <div className="load-more">
-        {status === "loading-more" ? <p>Loading...</p> : <p>Scroll to reveal more collections...</p>}
-      </div>
+        <div className="load-more">
+          {status === "loading-more" ? <p>Loading...</p> : <p>Scroll to reveal more collections...</p>}
+        </div>
       )}
     </main>
   );

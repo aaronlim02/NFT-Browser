@@ -56,15 +56,14 @@ const WalletExplorer = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [walletAddress, cursor, mode, hasMore]);
+  }, [walletAddress, cursor, mode]);
 
   useEffect(() => {
     const handleScroll = async () => {
       // Check if the user has scrolled to the bottom of the page
-      if (window.innerHeight + document.documentElement.scrollTop !== document.documentElement.offsetHeight || !hasMore) return;
-
-      // If the user has scrolled to the bottom and there are more NFTs to load, load more NFTs
-      await handleProcessData('scroll');
+      if (window.innerHeight + document.documentElement.scrollTop >= document.documentElement.offsetHeight - 5 && hasMore) {
+        await handleProcessData('scroll');
+      }
     };
 
     // Add the scroll event listener to the window object
