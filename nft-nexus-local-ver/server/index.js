@@ -89,12 +89,12 @@ app.post('/login', async (req, res) => {
       }
 
       if (!user) {
-        return res.status(400).json({ error: 'Invalid credentials' });
+        return res.status(401).json({ error: 'Invalid credentials' });
       }
 
       const isMatch = await bcryptjs.compare(password, user.password);
       if (!isMatch) {
-        return res.status(400).json({ error: 'Invalid credentials' });
+        return res.status(401).json({ error: 'Invalid credentials' });
       }
 
       const token = jwt.sign({ userId: user.id }, jwtSecretKey, { expiresIn: '3h' });

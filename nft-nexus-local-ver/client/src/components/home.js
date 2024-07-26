@@ -79,7 +79,7 @@ const Home = () => {
             {status === "501" ? <p>Missing/Invalid Python installation</p> : <p>Internal error while trying to run Python program</p>}
             <h3>What to do:</h3>
             {status === "501" ? 
-            <p>If you haven't installed Python yet, please do so <a class="psod-a" href="https://www.python.org/downloads/">here.</a> Afterwards, reinstall this application and repeat all the steps in the <a class="psod-a" href="https://github.com/aaronlim02/NFT-Browser">README.</a> You might also want to <a class="psod-a" href="https://www.google.com/search?q=how+to+add+python+to+path">add Python to PATH.</a></p>
+            <p>If you haven't installed Python yet, please do so <a class="psod-a" href="https://www.python.org/downloads/">here.</a> Afterwards, reinstall this application and repeat all the steps in the <a class="psod-a" href="https://github.com/aaronlim02/NFT-Browser">README.</a> You might also want to <a class="psod-a" href="https://www.google.com/search?q=how+to+add+python+to+path">add Python to PATH. If you have already install Python properly, please make sure the Python server is running.</a></p>
             : <p>It seems that you have already installed Python, however an internal server error has occured. Please try again later. If issues persist, you might want to try <a class="psod-a" href="https://www.python.org/downloads/">reinstalling Python</a> and this application.</p>}
           </div>
         </div>

@@ -378,6 +378,10 @@ main {
   padding-left: 330px;
 }
 
+.add-to-watchlist-gallery-input { /* also for gallery */
+  width: 800px;
+}
+
 .watchlist-input {
   width: 800px;
 }

@@ -23,8 +23,7 @@ const Login = () => {
     } catch (error) {
       if (error.response) {
         // The request was made and the server responded with a status code
-        // that falls out of the range of 2xx
-        if (error.response.status >= 400 && error.response.status < 500) {
+        if (error.response.status == 401) {
           alert('Invalid username or password');
         } else if (error.response.status >= 500 && error.response.status < 600) {
           alert('Server error, please try again later (please report this error)');

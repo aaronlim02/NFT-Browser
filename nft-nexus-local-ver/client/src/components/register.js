@@ -14,7 +14,7 @@ const Register = () => {
       if (error.response) {
         console.error('Registration error', error);
         if (error.response.status === 409) {
-          alert('User already exists!');
+          alert('User already exists! Please try a different username.');
         } else {
           alert('Registration failed, please try again later.');
         }

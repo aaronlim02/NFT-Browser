@@ -99,7 +99,7 @@ const Results = ({ content, interval, resultsType, status }) => {
     )
   } else if (status === "500") {
     return (
-      <p>internal error</p>
+      <p>Internal server error. Please try again later.</p>
     )
   }
   else {
