@@ -80,7 +80,7 @@ describe('Register Component', () => {
   });
 
   it('handles backend server not responding', async () => {
-    axios.post.mockImplementation(() => new Promise(() => {})); // Promise that never resolves
+    axios.post.mockRejectedValue(new Error('Network Error'));
 
     render(<Register />);
 
