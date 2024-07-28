@@ -9,7 +9,7 @@ const Register = () => {
     e.preventDefault();
     try {
       const response = await axios.post('http://localhost:5000/register', { username, password });
-      alert('Registration successful');
+      alert('Registration successful, please proceed to login');
     } catch (error) {
       if (error.response) {
         console.error('Registration error', error);

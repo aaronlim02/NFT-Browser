@@ -45,7 +45,7 @@ describe('Register Component', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Register' }));
 
     await waitFor(() => {
-      expect(window.alert).toHaveBeenCalledWith('Registration successful');
+      expect(window.alert).toHaveBeenCalledWith('Registration successful, please proceed to login');
     });
   });
 
