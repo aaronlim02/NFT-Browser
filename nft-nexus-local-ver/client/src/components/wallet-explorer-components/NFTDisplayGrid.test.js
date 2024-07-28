@@ -70,7 +70,7 @@ describe('NFTDisplayGrid Component', () => {
     expect(mockOnAddToGalleryClick).toHaveBeenCalledWith(mockData[0]);
   });
 
-  test('renders "Unknown error" message if an error occurs during rendering', () => {
+  test('renders "Rendering error" message if an error occurs during rendering', () => {
     
     jest.spyOn(console, 'error').mockImplementation(() => {});
 
@@ -80,7 +80,7 @@ describe('NFTDisplayGrid Component', () => {
     };
 
     render(<NFTDisplayGrid content={<FaultyComponent />} mode="default" onAddToGalleryClick={jest.fn()} />);
-    expect(screen.getByText('Unknown error')).toBeInTheDocument();
+    expect(screen.getByText('Rendering error')).toBeInTheDocument();
 
     console.error.mockRestore();
   });

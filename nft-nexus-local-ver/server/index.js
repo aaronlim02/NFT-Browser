@@ -10,7 +10,7 @@ const winston = require('winston');
 const { User, Setting } = require('../database/models');
 const sequelize = require('../database/sequelize');
 const sqlite3 = require('sqlite3');
-const dbPath = path.resolve(__dirname, '../database/database.sqlite'); // Adjust path as per your setup
+const dbPath = path.resolve(__dirname, '../database/database.sqlite');
 
 // Create a new SQLite database connection
 const db = new sqlite3.Database(dbPath, sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE, (err) => {
@@ -525,3 +525,6 @@ app.delete('/gallery-items/delete', authenticateToken, (req, res) => {
 app.listen(process.env.PORT || 5000, () => {
   console.log(`Server running on port ${process.env.PORT || 5000}`);
 });
+
+// Export the app instance for testing
+module.exports = app;

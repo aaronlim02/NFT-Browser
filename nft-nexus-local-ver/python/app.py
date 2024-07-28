@@ -182,7 +182,7 @@ def alchemy_process(nfts):
         url_parts = opensea_url.split("/")
         collection_addr = url_parts[-2]
         identifier = url_parts[-1]
-        out.append([name, colle_name, image, collection_addr, identifier, None, opensea_url]) # final
+        out.append([name, colle_name, image, collection_addr, identifier, None, opensea_url]) # final; was about to implement verified status checker but no time hence 'None'
     return out
 
 def alchemy_process_2(nfts):
