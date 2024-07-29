@@ -105,6 +105,28 @@ app.post('/login', async (req, res) => {
   }
 });
 
+app.delete('/delete-user', authenticateToken, async (req, res) => {
+  const userId = req.user.userId; // Assuming userId is set in the authenticateToken middleware
+
+  try {
+    // Delete the user from the database
+    db.run('DELETE FROM users WHERE id = ?', [userId], function (err) {
+      if (err) {
+        return res.status(500).json({ error: err.message });
+      }
+      
+      // Confirm deletion
+      if (this.changes === 0) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      return res.status(200).json({ success: true });
+    });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
 app.post('/process-data', authenticateToken, async (req, res) => {
   try {
     const data = req.body;
@@ -326,6 +348,38 @@ app.put('/watchlist/edit', authenticateToken, (req, res) => {
       }
     );
   });
+});
+
+// for testing only
+app.post('/notifications/add', authenticateToken, (req, res) => {
+  const { collection_slug, collection_name, floor_price, createdAt, updatedAt } = req.body;
+  const userId = req.user.userId;
+
+  if (!collection_name) {
+    return res.status(400).json({ error: 'Notification message is required' });
+  }
+
+  db.run(
+    'INSERT INTO notifications (user_id, collection_slug, collection_name, floor_price, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?)',
+    [userId, collection_slug, collection_name, floor_price, createdAt, updatedAt],
+    function (err) {
+      if (err) {
+        return res.status(500).json({ error: err.message });
+      }
+
+      // Fetch the inserted notification
+      db.get(
+        'SELECT * FROM notifications WHERE id = ?',
+        [this.lastID],
+        (err, row) => {
+          if (err) {
+            return res.status(500).json({ error: err.message });
+          }
+          return res.status(201).json(row);
+        }
+      );
+    }
+  );
 });
 
 app.get('/notifications/retrieve_from_account', authenticateToken, async (req, res) => {
