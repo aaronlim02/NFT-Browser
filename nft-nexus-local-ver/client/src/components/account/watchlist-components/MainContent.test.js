@@ -13,7 +13,7 @@ jest.mock('../../../utils/auth', () => ({
   getToken: jest.fn(() => 'fake-token')
 }));
 jest.mock('../../../utils/api', () => ({
-  getCollectionName: jest.fn(({ slug }) => 'Fake Collection')
+  getCollectionName: jest.fn(() => Promise.resolve('Fake Collection'))
 }));
 
 // Mock the Modal component

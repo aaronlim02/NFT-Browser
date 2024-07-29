@@ -16,7 +16,6 @@ from dotenv import load_dotenv
 import sqlite3
 from datetime import datetime, timedelta
 from flask_socketio import SocketIO, emit
-# pls add in requirements
 import numpy as np
 import pandas as pd
 from scipy import stats
