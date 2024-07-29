@@ -1,7 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { searchWallet } from '../utils/api';
-import NFTDisplayGrid from './wallet-explorer-components/NFTDisplayGrid'
-import './wallet-explorer-components/NFTDisplayGrid.css';
+import NFTDisplayGrid from './wallet-explorer-components/NFTDisplayGrid';
+import AddToGalleryModal from './wallet-explorer-components/AddToGalleryModal';
+import axios from 'axios';
+import { getToken } from '../utils/auth';
+import { isValidWalletAddress } from '../utils/otherutils';
 
 const WalletExplorer = () => {
   const [output, setOutput] = useState([]);
@@ -9,66 +12,106 @@ const WalletExplorer = () => {
   const [cursor, setCursor] = useState(null);
   const [hasMore, setHasMore] = useState(false);
   const [mode, setMode] = useState('default');
-  const [isLoading, setIsLoading] = useState(false);
+  const [status, setStatus] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedNFT, setSelectedNFT] = useState(null);
+  const [galleries, setGalleries] = useState([]);
+
+  useEffect(() => {
+    const fetchGalleries = async () => {
+      try {
+        const token = getToken();
+        const response = await axios.get('http://localhost:5000/galleries/retrieve_from_account', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setGalleries(response.data);
+      } catch (error) {
+        console.error('Error fetching galleries:', error);
+      }
+    };
+
+    fetchGalleries();
+  }, []);
 
   const handleProcessData = useCallback(async (source) => {
-    setIsLoading(true);
     if (source === 'search') {
-      if (walletAddress.length !== 42) {
+      if (!isValidWalletAddress(walletAddress)) {
         setOutput("400");
-        setIsLoading(false);
+        setStatus("not-loading");
         return;
       }
       setOutput([]); // Clear the current output when initiating a new search
       setCursor(null); // Reset the cursor when initiating a new search
       setHasMore(false); // Reset hasMore when initiating a new search
+      setStatus('loading');
+    } else {
+      setStatus('loading-more');
     }
+
     try {
       const data = { walletAddress, cursor, mode };
       const response = await searchWallet(data);
       console.log('Processed data:', response);
-      setCursor(response.next);
       setOutput((prevOutput) => [...prevOutput, ...response.output]);
+      setCursor(response.next);
       setHasMore(response.output.length >= 100);
+      setStatus('200');
     } catch (error) {
       console.error('Error fetching NFTs:', error);
+      setStatus('500');
     } finally {
-      setIsLoading(false);
+      if (source !== 'search') {
+        setStatus('200');
+      }
     }
-  }, [walletAddress, cursor, mode, hasMore]);
+  }, [walletAddress, cursor, mode]);
 
   useEffect(() => {
     const handleScroll = async () => {
-      // Check if the user has scrolled to the bottom of the page
-      if (window.innerHeight + document.documentElement.scrollTop !== document.documentElement.offsetHeight || !hasMore) return;
-      
-      // If the user has scrolled to the bottom and there are more NFTs to load, load more NFTs
-      await handleProcessData('scroll');
+      if (window.innerHeight + document.documentElement.scrollTop >= document.documentElement.offsetHeight - 5 && hasMore && status === '200') {
+        await handleProcessData('scroll');
+      }
     };
 
-    // Add the scroll event listener to the window object
     window.addEventListener('scroll', handleScroll);
-    
-    // Cleanup function to remove the event listener when the component is unmounted or dependencies change
+
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [handleProcessData, hasMore]);
+  }, [handleProcessData, hasMore, status]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
     handleProcessData('search');
   };
 
+  const handleAddToGalleryClick = (nft) => {
+    setSelectedNFT(nft);
+    setIsModalOpen(true);
+  };
+
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    setSelectedNFT(null);
+  };
+
+  const handleAdd = (newItem, error) => {
+    if (error) {
+      alert(`Error: ${error}`);
+    } else {
+      alert(`Item ${newItem.collection_name} added successfully!`);
+    }
+  };
+
   return (
     <main>
       <p align="center">Enter wallet address to display NFTs in a wallet: (e.g. "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045")</p>
       <form className="center" onSubmit={handleSubmit}>
-        <input 
-          type="text" 
+        <input
+          type="text"
           value={walletAddress}
           onChange={(e) => setWalletAddress(e.target.value)}
         />
 
-        <select 
+        <select
           value={mode}
           onChange={(e) => setMode(e.target.value)}
         >
@@ -77,13 +120,22 @@ const WalletExplorer = () => {
           <option value="listed">Listed NFTs only</option>
         </select>
 
-        <button type="submit">Search</button>
+        <button type="submit" disabled={status === "loading" || status === "loading-more"}>Search</button>
       </form>
-      {isLoading ? <p>Loading...</p> : <NFTDisplayGrid content={output} mode={mode} />}
+      {status === "loading" ? <p>Loading...</p> : <NFTDisplayGrid content={output} mode={mode} onAddToGalleryClick={handleAddToGalleryClick} />}
       {hasMore && (
         <div className="load-more">
-          <p>Scroll to reveal more NFTs...</p>
+          {status === "loading-more" ? <p>Loading...</p> : <p>Scroll to reveal more NFTs...</p>}
         </div>
+      )}
+      {selectedNFT && (
+        <AddToGalleryModal
+          isOpen={isModalOpen}
+          onRequestClose={handleModalClose}
+          nft={selectedNFT}
+          galleries={galleries}
+          onAdd={handleAdd}
+        />
       )}
     </main>
   );

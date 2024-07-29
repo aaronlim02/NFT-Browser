@@ -10,21 +10,19 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault(); // Prevent page refresh
-    // Add authentication logic here
+    // authentication
     if (username === '' || password === '') {
       alert('Please enter both username and password');
     }
     try {
       const response = await axios.post('http://localhost:5000/login', { username, password });
-      // https://nft-browser.vercel.app/login / http://localhost:5000/login
       login(response.data.token); // Save the token
       alert('Login successful');
       navigate('/account', { state: { username } });
     } catch (error) {
       if (error.response) {
         // The request was made and the server responded with a status code
-        // that falls out of the range of 2xx
-        if (error.response.status >= 400 && error.response.status < 500) {
+        if (error.response.status == 401) {
           alert('Invalid username or password');
         } else if (error.response.status >= 500 && error.response.status < 600) {
           alert('Server error, please try again later (please report this error)');
@@ -56,6 +54,7 @@ const Login = () => {
             type="text"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
+            placeholder="Password"
             required
           />
         </div>
@@ -65,6 +64,7 @@ const Login = () => {
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            placeholder="Username"
             required
           />
         </div>

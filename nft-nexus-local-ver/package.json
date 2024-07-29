@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "scripts": {
     "start": "concurrently \"npm run server\" \"npm run client\" \"npm run python\"",
+    "start-without-python": "concurrently \"npm run server\" \"npm run client\"",
     "server": "cd server && npm start",
     "client": "cd client && npm run start",
     "python": "node run-python-app.js",
