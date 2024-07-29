@@ -70,7 +70,7 @@ const NFTDisplayGrid = ({ content, mode, onAddToGalleryClick }) => {
       }
     } catch {
       return (
-        <p>Unknown error</p>
+        <p>Rendering error</p>
       )
     }
   }

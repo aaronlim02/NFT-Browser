@@ -732,11 +732,9 @@ main {
 }
 
 .python-screen-of-death {
-  width: 200px; /* Set the width of the rectangle */
-  height: 100px; /* Set the height of the rectangle */
+  width: 100vw; /* Set the width of the rectangle */
+  height: 80vh; /* Set the height of the rectangle */
   background-color: blue; /* Set the background color */
-  border: 2px solid #000; /* Optional: Add a border around the rectangle */
-  margin: 20px; /* Optional: Add some space around the rectangle */
 }
 
 .psod-message {
