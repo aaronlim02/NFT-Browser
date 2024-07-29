@@ -5,6 +5,7 @@ import MainContent from './MainContent';
 import axios from 'axios';
 import { getToken } from '../../../utils/auth';
 import { getCollectionName } from '../../../utils/api';
+import Modal from 'react-modal';
 
 // Mocking the dependencies
 jest.mock('axios');
@@ -12,15 +13,21 @@ jest.mock('../../../utils/auth', () => ({
   getToken: jest.fn(() => 'fake-token')
 }));
 jest.mock('../../../utils/api', () => ({
-  getCollectionName: jest.fn(() => 'Fake Collection')
+  getCollectionName: jest.fn(({ slug }) => 'Fake Collection')
 }));
 
 // Mock the Modal component
 jest.mock('react-modal', () => {
-  return {
-    setAppElement: jest.fn(),
-    default: (props) => <div {...props} />
-  };
+  const Modal = ({ isOpen, onRequestClose, children }) => (
+    isOpen ? (
+      <div className="mockModal">
+        <button onClick={onRequestClose}>Close</button>
+        {children}
+      </div>
+    ) : null
+  );
+  Modal.setAppElement = () => null;
+  return Modal;
 });
 
 describe('MainContent Component', () => {
@@ -57,6 +64,7 @@ describe('MainContent Component', () => {
   });
 
   test('handles adding a new item', async () => {
+
     axios.post.mockResolvedValueOnce({ data: { id: 3, collection_name: 'New Collection', slug: 'new-collection' } });
     const newLink = 'http://example.com/collection/new-collection';
 

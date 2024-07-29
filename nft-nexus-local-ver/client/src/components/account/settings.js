@@ -3,7 +3,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { getToken, isAuthenticated } from '../../utils/auth';
 
-const PersonalDetails = () => {
+const Settings = () => {
   const [yourWalletAddress, setYourWalletAddress] = useState('');
   const [lightDarkMode, setLightDarkMode] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -57,7 +57,7 @@ const PersonalDetails = () => {
     } else if (error.request) {
       alert('No response from server, please try again later (please report this error)');
     } else {
-      alert('An unexpected error occurred (with no response) (please report this error)');
+      alert('Please check if the server is connected.');
     }
     console.error('Login error', error);
   }
@@ -67,16 +67,18 @@ const PersonalDetails = () => {
       <form class="settings-form" onSubmit={handleSubmit}>
         <div>
           <h2>Wallet Details</h2>
-          <label>Update your wallet address: </label>
+          <label htmlFor="wallet-address">Update your wallet address: </label>
           <input class="settings-input"
+            id="wallet-address"
             type="text"
             value={yourWalletAddress}
             placeholder='(unchanged)'
             onChange={(e) => setYourWalletAddress(e.target.value)}
           />
           <h2>Appearance</h2>
-          <label>Choose Light/Dark Mode: </label>
+          <label htmlFor="theme-select">Choose Light/Dark Mode: </label>
           <select
+            id="theme-select"
             value={lightDarkMode}
             onChange={(e) => setLightDarkMode(e.target.value)}
             >
@@ -117,4 +119,4 @@ const PersonalDetails = () => {
   );
 };
 
-export default PersonalDetails;
+export default Settings;
