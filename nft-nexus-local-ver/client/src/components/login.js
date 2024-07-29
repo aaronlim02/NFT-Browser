@@ -10,13 +10,12 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault(); // Prevent page refresh
-    // Add authentication logic here
+    // authentication
     if (username === '' || password === '') {
       alert('Please enter both username and password');
     }
     try {
       const response = await axios.post('http://localhost:5000/login', { username, password });
-      // https://nft-browser.vercel.app/login / http://localhost:5000/login
       login(response.data.token); // Save the token
       alert('Login successful');
       navigate('/account', { state: { username } });

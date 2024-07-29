@@ -4,6 +4,7 @@ import HomeContent from './HomeContent';
 import IntroNFTContent from './IntroNFTContent';
 import WalletContent from './WalletContent';
 import BuySellContent from './BuySellContent';
+import WebsiteContent from './WebsiteContent';
 
 const MainContent = ({ content }) => {
   let Component;
@@ -20,6 +21,9 @@ const MainContent = ({ content }) => {
       break;
     case 'BuySell':
       Component = BuySellContent;
+      break;
+    case 'Website':
+      Component = WebsiteContent;
       break;
     default:
       Component = HomeContent;
