@@ -6,8 +6,8 @@ apscheduler
 flask-socketio
 matplotlib
 numpy
-pandas
-scipy
+#pandas
+#scipy
 pytest
 pytest-flask
 pytest-mock 

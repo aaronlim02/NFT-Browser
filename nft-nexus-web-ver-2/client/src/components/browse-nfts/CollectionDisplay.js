@@ -160,7 +160,7 @@ const Results = ({ content, interval, resultsType, status }) => {
                       {String(Math.round(row[7][i]['volume_change'] * 1000) / 10) + "%"}
                     </p>
                   </td>
-                  <td><button onClick={() => handleViewSaleGraph(row[0], row[1], row[7][i]['sales'], Number(interval))}>View</button></td>
+                  <td><button disabled onClick={() => handleViewSaleGraph(row[0], row[1], row[7][i]['sales'], Number(interval))}>View</button></td>
                   <td><button onClick={() => handleAddToWatchlist(row[0], row[1])}>Add</button></td>
                 </tr>
               ))}

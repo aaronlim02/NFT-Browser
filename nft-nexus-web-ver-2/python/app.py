@@ -6,19 +6,17 @@ import matplotlib.colors as mcolors
 from matplotlib.dates import DateFormatter
 import io
 import base64
-import json
 from flask_cors import CORS
 import requests
 from apscheduler.schedulers.background import BackgroundScheduler
 import time
-import os
 from dotenv import load_dotenv
 import sqlite3
 from datetime import datetime, timedelta
 from flask_socketio import SocketIO, emit
 import numpy as np
-import pandas as pd
-from scipy import stats
+#import pandas as pd # exceed size
+#from scipy import stats # exceed size
 
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*")
@@ -514,6 +512,7 @@ def get_sales_data(slug, x_days_ago):
     results = get_sales_amount_list(slug, today - timedelta(days=x_days_ago) - timedelta(hours=8), '', [])
     return results
 
+'''
 @app.route('/sales-graph/load', methods=['POST'])
 def sales_graph():
     data = request.json
@@ -690,7 +689,7 @@ def sales_graph():
         "scatter_no_outlier": img_scatter_no_outlier_base64,
         "volume_no_outlier": img_vol_no_outlier_base64
     })
-
+'''
 
 if __name__ == '__main__':
     socketio.run(app, port=5001, debug=False, allow_unsafe_werkzeug=True) 
