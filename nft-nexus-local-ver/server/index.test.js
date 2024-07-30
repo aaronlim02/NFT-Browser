@@ -2,6 +2,8 @@ const request = require('supertest');
 const express = require('express');
 const app = require('./index'); // Adjust path to your Express app
 
+//npm test this/files/directory, describe.only to only test this set
+
 describe('Server Tests', () => {
 
   describe('Steps to create a new user', () => {

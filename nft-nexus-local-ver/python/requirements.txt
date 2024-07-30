@@ -9,3 +9,6 @@ numpy
 pandas
 scipy
 pytest
+pytest-flask
+pytest-mock 
+requests-mock

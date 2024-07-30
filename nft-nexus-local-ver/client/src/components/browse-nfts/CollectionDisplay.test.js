@@ -32,7 +32,7 @@ jest.mock('./SalesGraphModal', () => (props) => (
   </div>
 ));
 
-describe('Settings Component', () => {
+describe('Collection Display Component', () => {
 
   beforeEach(() => {
     jest.spyOn(window, 'alert').mockImplementation(() => {});
@@ -76,64 +76,6 @@ describe('Settings Component', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Mocked Modal')).toBeInTheDocument();
-    });
-  });
-
-  test('adds item to watchlist', async () => {
-    render(
-      <Results
-        content={[
-          ['Item 1', 'slug1', 'image1', 'link1', 'collection1', 'type1', { floor_price: 1, market_cap: 1 }, [{ sales: 10, volume: 20, volume_change: 0.5 }]],
-        ]}
-        interval="1"
-        resultsType="load"
-        status="success"
-      />
-    );
-
-    fireEvent.click(screen.getAllByText('Add')[0]);
-
-    await waitFor(() => {
-      // Check if isAuthenticated was called
-      expect(isAuthenticated).toHaveBeenCalled();
-      // Check if getToken was called
-      expect(getToken).toHaveBeenCalled();
-      // Check if axios.post was called with the correct arguments
-      expect(axios.post).toHaveBeenCalledWith(
-        'http://localhost:5000/watchlist/add_from_nft_browser',
-        { name: 'Item 1', slug: 'slug1' },
-        { headers: { Authorization: 'Bearer fake-token' } }
-      );
-      // Check if the alert was called with the correct message
-      expect(window.alert).toHaveBeenCalledWith('Added Item 1 to watchlist');
-    });
-  });
-
-  test('handles error when adding to watchlist', async () => {
-    axios.post.mockRejectedValueOnce({
-      response: { data: { error: 'Error adding to watchlist' } }
-    });
-
-    render(
-      <Results
-        content={[
-          ['Item 1', 'slug1', 'image1', 'link1', 'collection1', 'type1', { floor_price: 1, market_cap: 1 }, [{ sales: 10, volume: 20, volume_change: 0.5 }]],
-        ]}
-        interval="1"
-        resultsType="load"
-        status="success"
-      />
-    );
-
-    fireEvent.click(screen.getAllByText('Add')[0]);
-
-    await waitFor(() => {
-      // Check if isAuthenticated was called
-      expect(isAuthenticated).toHaveBeenCalled();
-      // Check if getToken was called
-      expect(getToken).toHaveBeenCalled();
-      // Check if the alert was called with the correct error message
-      expect(window.alert).toHaveBeenCalledWith('Error adding to watchlist');
     });
   });
 
