@@ -43,7 +43,7 @@ function App() {
             <Route path="/account" element={<PrivateRoute element={<Account />} />} />
             <Route path="/register" element={<Register />} />
             <Route path="/wallet-explorer" element={<WalletExplorer />} />
-            <Route path="/guides" element={<Guides />} />
+            <Route path="/src/components/guides" element={<Guides />} />
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>
 
