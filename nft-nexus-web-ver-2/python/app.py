@@ -1,9 +1,9 @@
 from flask import Flask, request, jsonify, send_file
-import matplotlib
-matplotlib.use('Agg')  # Use a non-GUI backend
-import matplotlib.pyplot as plt
-import matplotlib.colors as mcolors
-from matplotlib.dates import DateFormatter
+#import matplotlib
+#matplotlib.use('Agg')  # Use a non-GUI backend
+#import matplotlib.pyplot as plt
+#import matplotlib.colors as mcolors
+#from matplotlib.dates import DateFormatter
 import io
 import base64
 from flask_cors import CORS
@@ -14,7 +14,7 @@ from dotenv import load_dotenv
 import sqlite3
 from datetime import datetime, timedelta
 from flask_socketio import SocketIO, emit
-import numpy as np
+#import numpy as np
 #import pandas as pd # exceed size
 #from scipy import stats # exceed size
 

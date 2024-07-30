@@ -4,8 +4,8 @@ requests
 python-dotenv
 apscheduler
 flask-socketio
-matplotlib
-numpy
+#matplotlib
+#numpy
 #pandas
 #scipy
 pytest
