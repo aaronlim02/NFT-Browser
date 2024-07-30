@@ -68,11 +68,15 @@ def get_item_name():
         url = f"https://api.opensea.io/api/v2/chain/ethereum/contract/{contract}/nfts/{item_id}"
         response = requests.get(url, headers=opensea_headers)
         print("get item code:", response.status_code)
+        if response.status_code == 400:
+            return jsonify({"error": "Error parsing data, please check your input."}), response.status_code
+        if response.status_code == 500:
+            return jsonify({"error": "Opensea server error, please trry again later."}), response.status_code
         data = response.json()
         name = data["nft"]["name"]
         return jsonify(name)
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": str(e), "status_code": response.status_code})
 
 # get nft from account api
 
@@ -253,7 +257,7 @@ def load_gallery_items():
     nfts_processed = alchemy_process_2(nfts)
     processed_data = {
         'message': 'Data processed successfully',
-        'input_data': [data],
+        'input_data': data,
         'output': nfts_processed,
         'next': None
     }
@@ -351,7 +355,7 @@ def load_wallet():
     input_data = request.get_json()
     wallet_address = input_data['walletAddress']
     if not wallet_address:
-        processed_data = {'message': 'Please input wallet address in settings!'}
+        processed_data = {'error': 'Please input wallet address in settings!'}
         return jsonify(processed_data)
     url = f"https://eth-mainnet.g.alchemy.com/v2/{alchemy_api_key}"
     payload = {
@@ -367,12 +371,15 @@ def load_wallet():
     response = requests.post(url, json=payload, headers=headers)
     raw_data = response.json()
     print(raw_data)
-    processed_data = {
-        'message': 'Data processed successfully',
-        'input_data': [wallet_address],
-        'output': int(raw_data["result"], 16) / 10**18
-    }
-    return jsonify(processed_data)
+    if (response.status_code) == 500:
+        return jsonify({'error': 'Internal server error, please try again later.'})
+    else:
+        processed_data = {
+            'message': 'Data processed successfully',
+            'input_data': [wallet_address],
+            'output': int(raw_data["result"], 16) / 10**18
+        }
+        return jsonify(processed_data)
 
 # notification feature
 

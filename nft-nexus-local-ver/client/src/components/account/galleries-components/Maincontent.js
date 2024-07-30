@@ -65,9 +65,18 @@ const MainContent = ({ selectedGallery }) => {
     let collection_name = "";
     try {
       collection_name = await getItemName({contract: contract_addr, item_id: token_id});
+      console.log(collection_name)
+;      
     } catch (error) {
-      console.error('Error getting item name:', error);
-      alert(`${error}`);
+      console.log('Error getting item name:', error.response);
+      if (error.response.status === 400) {
+        alert("Invalid URL! Please check your input");
+      } else if (error.response.status === 500) {
+        alert("Opensea server error, please try again later");
+      } else {
+        alert("Server is not responding, please check your connection");
+      }
+      return;
     }      
 
     const token = getToken();
