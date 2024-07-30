@@ -4,19 +4,9 @@
       "src": "client/package.json",
       "use": "@vercel/static-build",
       "config": { "distDir": "build" }
-    },
-    {
-      "src": "python/app.py",
-      "use": "@vercel/python"
-    },
-    {
-      "src": "server/index.js",
-      "use": "@vercel/node"
     }
   ],
   "routes": [
-    { "src": "/api/flask/(.*)", "dest": "/python/api/app.py" },
-    { "src": "/api/express/(.*)", "dest": "/server/api/index.js" },
     { "src": "/(.*)", "dest": "/client/$1" }
   ]
 }
