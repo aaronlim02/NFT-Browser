@@ -6,7 +6,7 @@
       "config": { "distDir": "build" }
     }
   ],
-  "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
+  "routes": [
+    { "src": "/(.*)", "dest": "/client/$1" }
   ]
 }
