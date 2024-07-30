@@ -150,7 +150,6 @@ def test_load_wallet_api_error(mock_post, client):
     # Mock the response from the external API to simulate an error
     mock_response = Mock()
     mock_response.status_code = 500
-    mock_response.json.return_value = {"error": "Internal Server Error"}
     mock_post.return_value = mock_response
 
     data = {'walletAddress': '0x1234567890abcdef1234567890abcdef12345678'}
