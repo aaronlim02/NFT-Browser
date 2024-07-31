@@ -693,5 +693,5 @@ def sales_graph():
 
 
 if __name__ == '__main__':
-    socketio.run(app, port=5001, debug=False, allow_unsafe_werkzeug=True) 
+    socketio.run(app, port=8080, debug=False, allow_unsafe_werkzeug=True) 
     # starts the Flask app and enables WebSocket support through the Flask-SocketIO extension

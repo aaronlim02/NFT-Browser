@@ -2,7 +2,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://localhost:5001', // Adjust based on your server setup
+  baseURL: 'https://nft-nexus-python-zqkaisvtdq-uc.a.run.app', // Adjust based on your server setup
 });
 
 export const searchWallet = async (data) => {
