@@ -25,6 +25,7 @@
   "dependencies": {
     "@auth0/auth0-react": "^2.2.4",
     "concurrently": "^6.5.1",
+    "firebase": "^10.12.4",
     "sequelize": "^6.37.3",
     "sequelize-cli": "^6.6.2",
     "sqlite3": "^5.1.7"
