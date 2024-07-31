@@ -1,0 +1,14 @@
+Flask
+Flask-Cors
+requests
+python-dotenv
+apscheduler
+flask-socketio
+matplotlib
+numpy
+pandas
+scipy
+pytest
+pytest-flask
+pytest-mock 
+requests-mock

@@ -27,7 +27,7 @@ describe('Dashboard Component', () => {
 
     // Check if the ETH balance is rendered correctly
     await waitFor(() => {
-      expect(screen.getByText('ETH Balance: 1.23 ETH')).toBeInTheDocument();
+      expect(screen.getByText('ETH Balance: 1.2300 ETH')).toBeInTheDocument();
     });
   });
 
@@ -41,7 +41,7 @@ describe('Dashboard Component', () => {
 
     // Check if the error message is rendered
     await waitFor(() => {
-      expect(screen.getByText('ETH Balance: Please input valid wallet address in settings!')).toBeInTheDocument();
+      expect(screen.getByText('ETH Balance Fetching Error: Please input a valid wallet address in settings!')).toBeInTheDocument();
     });
   });
 
@@ -70,7 +70,7 @@ describe('Dashboard Component', () => {
 
     // Check if the error is logged to the console
     await waitFor(() => {
-      expect(screen.getByText('ETH Balance: Failed to fetch data due to server error. Please try again later.')).toBeInTheDocument();
+      expect(screen.getByText('ETH Balance Fetching Error: Failed to fetch data due to server error. Please try again later.')).toBeInTheDocument();
     });
   });
 });
