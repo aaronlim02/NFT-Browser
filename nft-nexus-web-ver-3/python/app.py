@@ -19,6 +19,7 @@ from flask_socketio import SocketIO, emit
 import numpy as np
 import pandas as pd
 from scipy import stats
+import sqlitecloud
 
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*")
@@ -27,7 +28,7 @@ load_dotenv()
 
 opensea_api_key = "d7bc517c25894772ae915ef729c8a443"
 alchemy_api_key = "Fn6XgY7SlhdqnbN09xv5QFenmRxaK0Ej"
-database_url = r"../database/database.sqlite"
+#database_url = r"../database/database.sqlite"
 
 delay = 0.0
 
@@ -388,8 +389,9 @@ def load_wallet():
 def fetch_floor_prices():
     try:
         print("Fetching start...")
-        conn = sqlite3.connect(database_url, isolation_level=None)
+        conn = sqlitecloud.connect("sqlitecloud://cqjrg3d9ik.sqlite.cloud:8860?apikey=zabyXKNXskraNAGE2Af86sowyOyHGz76mym0lMCyRTo")
         cursor = conn.cursor()
+        cursor.execute('USE DATABASE database.sqlite;')
 
         cursor.execute('SELECT * FROM watchlist')
         collections = cursor.fetchall()
@@ -422,8 +424,9 @@ def fetch_floor_prices():
         print(f"Error fetching floor prices: {e}")
 
 def notify_user(user_id, collection_slug, collection_name, floor_price):
-    conn = sqlite3.connect(database_url)
+    conn = sqlitecloud.connect("sqlitecloud://cqjrg3d9ik.sqlite.cloud:8860?apikey=zabyXKNXskraNAGE2Af86sowyOyHGz76mym0lMCyRTo")
     cursor = conn.cursor()
+    cursor.execute('USE DATABASE database.sqlite;')
 
     # Check if the notification already exists
     cursor.execute('SELECT * FROM notifications WHERE user_id = ? AND collection_slug = ?', (user_id, collection_slug))
@@ -460,8 +463,9 @@ scheduler.start()
 @app.route('/notifications', methods=['GET'])
 def get_notifications(user_id):
     try:
-        conn = sqlite3.connect(database_url)
+        conn = sqlitecloud.connect("sqlitecloud://cqjrg3d9ik.sqlite.cloud:8860?apikey=zabyXKNXskraNAGE2Af86sowyOyHGz76mym0lMCyRTo")
         cursor = conn.cursor()
+        cursor.execute('USE DATABASE database.sqlite;')
 
         cursor.execute('SELECT * FROM notifications WHERE user_id = ?', (user_id,))
         notifications = cursor.fetchall()
