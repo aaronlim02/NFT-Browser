@@ -69,7 +69,7 @@ const Results = ({ content, interval, resultsType, status }) => {
       const token = getToken(); // retrieve token
       
       // Send a request to the backend to update the watchlist
-      axios.post('http://localhost:5000/watchlist/add_from_nft_browser', 
+      axios.post('https://us-central1-nft-nexus-5e707.cloudfunctions.net/api/watchlist/add_from_nft_browser', 
         { name, slug },
         { headers: { Authorization: `Bearer ${token}` }})
         .then(response => {

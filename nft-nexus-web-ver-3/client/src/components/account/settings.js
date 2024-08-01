@@ -14,7 +14,7 @@ const Settings = () => {
     e.preventDefault();
     try {
       const token = getToken();
-      const response = await axios.post('http://localhost:5000/settings/personal-details', 
+      const response = await axios.post('https://us-central1-nft-nexus-5e707.cloudfunctions.net/api/settings/personal-details', 
         { yourWalletAddress, lightDarkMode }, 
         { headers: { Authorization: `Bearer ${token}` }}
       );  
@@ -34,7 +34,7 @@ const Settings = () => {
 
     try {
       const token = getToken();
-      const response = await axios.post('http://localhost:5000/settings/change-password', 
+      const response = await axios.post('https://us-central1-nft-nexus-5e707.cloudfunctions.net/api/settings/change-password', 
         { newPassword }, 
         { headers: { Authorization: `Bearer ${token}` }}
       );  

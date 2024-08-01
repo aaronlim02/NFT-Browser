@@ -17,7 +17,7 @@ const MainContent = ({ selectedGallery }) => {
       try {
         const token = getToken();
         const id = selectedGallery.id;
-        const response = await axios.get(`http://localhost:5000/gallery-items/view?galleryId=${id}`, {
+        const response = await axios.get(`https://us-central1-nft-nexus-5e707.cloudfunctions.net/api/gallery-items/view?galleryId=${id}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         console.log(response.data);
@@ -82,7 +82,7 @@ const MainContent = ({ selectedGallery }) => {
     const token = getToken();
     try {
       const gallery_id = selectedGallery.id;
-      const response = await axios.post('http://localhost:5000/gallery-items/add', 
+      const response = await axios.post('https://us-central1-nft-nexus-5e707.cloudfunctions.net/api/gallery-items/add', 
         { gallery_id, contract_addr, token_id, collection_name },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -102,7 +102,7 @@ const MainContent = ({ selectedGallery }) => {
   const handleDeleteItem = async () => {
     try {
       const token = getToken();
-      await axios.delete(`http://localhost:5000/gallery-items/delete?itemId=${deleteItem[0]}`, {
+      await axios.delete(`https://us-central1-nft-nexus-5e707.cloudfunctions.net/api/gallery-items/delete?itemId=${deleteItem[0]}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setGalleryItems(galleryItems.filter(item => item[0] !== deleteItem[0]));

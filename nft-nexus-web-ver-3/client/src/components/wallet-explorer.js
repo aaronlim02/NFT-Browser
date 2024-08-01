@@ -21,7 +21,7 @@ const WalletExplorer = () => {
     const fetchGalleries = async () => {
       try {
         const token = getToken();
-        const response = await axios.get('http://localhost:5000/galleries/retrieve_from_account', {
+        const response = await axios.get('https://us-central1-nft-nexus-5e707.cloudfunctions.net/api/galleries/retrieve_from_account', {
           headers: { Authorization: `Bearer ${token}` }
         });
         setGalleries(response.data);

@@ -10,7 +10,7 @@ const AddToGalleryModal = ({ isOpen, onRequestClose, nft, galleries, onAdd }) =>
     e.preventDefault();
     try {
       const token = getToken();
-      const response = await axios.post(`http://localhost:5000/gallery-items/add`, {
+      const response = await axios.post(`https://us-central1-nft-nexus-5e707.cloudfunctions.net/api/gallery-items/add`, {
         gallery_id: selectedGallery,
         collection_name: nft[0],
         contract_addr: nft[3],

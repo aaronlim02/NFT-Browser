@@ -17,7 +17,7 @@ const Watchlist = () => {
       setIsLoading(true);
       const token = getToken();
       const response = await axios.get(
-        'http://localhost:5000/watchlist/retrieve_from_account',
+        'https://us-central1-nft-nexus-5e707.cloudfunctions.net/api/watchlist/retrieve_from_account',
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setWatchlistData(response.data);
@@ -35,7 +35,7 @@ const Watchlist = () => {
       setIsLoading(true);
       const token = getToken();
       const response = await axios.get(
-        'http://localhost:5000/notifications/retrieve_from_account',
+        'https://us-central1-nft-nexus-5e707.cloudfunctions.net/api/notifications/retrieve_from_account',
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setNotificationData(response.data);

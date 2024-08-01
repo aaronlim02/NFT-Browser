@@ -27,7 +27,7 @@ const MainContent = ({ watchlistData, error, isLoading, setWatchlistData }) => {
   const handleDelete = async (id) => {
     try {
       const token = getToken();
-      await axios.delete('http://localhost:5000/watchlist/delete', {
+      await axios.delete('https://us-central1-nft-nexus-5e707.cloudfunctions.net/api/watchlist/delete', {
         data: { id: id },
         headers: { Authorization: `Bearer ${token}` },
       });;
@@ -42,7 +42,7 @@ const MainContent = ({ watchlistData, error, isLoading, setWatchlistData }) => {
     try {
       const token = getToken();
       const response = await axios.put(
-        'http://localhost:5000/watchlist/edit',
+        'https://us-central1-nft-nexus-5e707.cloudfunctions.net/api/watchlist/edit',
         { id: editItem.id, set_price: newPrice },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -74,7 +74,7 @@ const MainContent = ({ watchlistData, error, isLoading, setWatchlistData }) => {
 
     const token = getToken();
     try {
-      const response = await axios.post('http://localhost:5000/watchlist/add_from_nft_browser', 
+      const response = await axios.post('https://us-central1-nft-nexus-5e707.cloudfunctions.net/api/watchlist/add_from_nft_browser', 
         { name, slug },
         { headers: { Authorization: `Bearer ${token}` } }
       );

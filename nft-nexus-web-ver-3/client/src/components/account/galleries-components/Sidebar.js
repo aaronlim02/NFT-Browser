@@ -18,7 +18,7 @@ const Sidebar = ({ onSidebarClick, selectedGallery }) => {
     const fetchGalleries = async () => {
       try {
         const token = getToken();
-        const response = await axios.get('http://localhost:5000/galleries/retrieve_from_account', {
+        const response = await axios.get('https://us-central1-nft-nexus-5e707.cloudfunctions.net/api/galleries/retrieve_from_account', {
           headers: { Authorization: `Bearer ${token}` }
         });
         setGalleries(response.data);
@@ -68,7 +68,7 @@ const Sidebar = ({ onSidebarClick, selectedGallery }) => {
     e.preventDefault();
     try {
       const token = getToken();
-      const response = await axios.post('http://localhost:5000/galleries/add', {
+      const response = await axios.post('https://us-central1-nft-nexus-5e707.cloudfunctions.net/api/galleries/add', {
         name: newGalleryName,
         description: newGalleryDescription
       }, {
@@ -86,7 +86,7 @@ const Sidebar = ({ onSidebarClick, selectedGallery }) => {
     try {
       const token = getToken();
       console.log({newGalleryName, newGalleryDescription})
-      const response = await axios.put(`http://localhost:5000/galleries/edit?galleryId=${editGallery.id}`, {
+      const response = await axios.put(`https://us-central1-nft-nexus-5e707.cloudfunctions.net/api/galleries/edit?galleryId=${editGallery.id}`, {
         name: newGalleryName,
         description: newGalleryDescription
       }, {
@@ -103,7 +103,7 @@ const Sidebar = ({ onSidebarClick, selectedGallery }) => {
   const handleDeleteGallery = async () => {
     try {
       const token = getToken();
-      await axios.delete(`http://localhost:5000/galleries/delete?galleryId=${deleteGallery.id}`, {
+      await axios.delete(`https://us-central1-nft-nexus-5e707.cloudfunctions.net/api/galleries/delete?galleryId=${deleteGallery.id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setGalleries(galleries.filter(gallery => gallery.id !== deleteGallery.id));

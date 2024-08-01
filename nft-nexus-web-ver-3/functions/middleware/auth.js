@@ -8,7 +8,7 @@ const authenticateToken = (req, res, next) => {
 
   if (!token) return res.status(401).json({ error: 'Unauthorized: No token provided' });
 
-  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+  jwt.verify(token, "6d4aecdc4712722d9ac57da9aaad537605979369d40a68a27539b21007aa3d42", (err, user) => {
     if (err) return res.status(403).json({ error: 'Unauthorized: Invalid token' });
     req.user = user;
     next();

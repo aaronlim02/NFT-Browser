@@ -7,7 +7,7 @@ const Notifications = ({ notificationData, error, isLoading, setNotificationData
   const handleDelete = async (id) => {
     try {
       const token = getToken();
-      await axios.delete('http://localhost:5000/notifications/delete', {
+      await axios.delete('https://us-central1-nft-nexus-5e707.cloudfunctions.net/api/notifications/delete', {
         data: { id: id },
         headers: { Authorization: `Bearer ${token}` },
       });;
@@ -20,7 +20,7 @@ const Notifications = ({ notificationData, error, isLoading, setNotificationData
   const handleDeleteAll = async () => {
     try {
       const token = getToken();
-      await axios.delete('http://localhost:5000/notifications/delete-all', {
+      await axios.delete('https://us-central1-nft-nexus-5e707.cloudfunctions.net/api/notifications/delete-all', {
         headers: { Authorization: `Bearer ${token}` },
       });;
       setNotificationData([]);

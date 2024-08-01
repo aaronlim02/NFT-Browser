@@ -25,7 +25,7 @@ const Account = () => {
     const fetchUserData = async () => {
       try {
         const token = getToken();
-        const response = await axios.get('http://localhost:5000/api/account', {
+        const response = await axios.get('https://us-central1-nft-nexus-5e707.cloudfunctions.net/api/api/account', {
           headers: { Authorization: `Bearer ${token}` },
         });
         setUser(response.data);

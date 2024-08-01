@@ -68,7 +68,7 @@ app.options('*', cors());
 // Use express.json() to parse JSON bodies
 app.use(express.json());
 
-const jwtSecretKey = process.env.JWT_SECRET;
+const jwtSecretKey = "6d4aecdc4712722d9ac57da9aaad537605979369d40a68a27539b21007aa3d42";
 
 app.post('/register', async (req, res) => {
   const { username, password } = req.body;
