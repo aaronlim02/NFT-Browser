@@ -1,7 +1,7 @@
 import io from 'socket.io-client';
 import { toast } from 'react-toastify';
 
-const socket = io('http://localhost:5001', {
+const socket = io('https://nft-nexus-python-zqkaisvtdq-uc.a.run.app', {
   transports: ['websocket', 'polling'], // Ensure both transports are allowed
 });  // Ensure the port matches your Flask server
 

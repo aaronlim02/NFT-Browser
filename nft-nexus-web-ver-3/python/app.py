@@ -22,7 +22,7 @@ from scipy import stats
 
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*")
-CORS(app)
+CORS(app, origins=["*"], supports_credentials=True)
 load_dotenv()
 
 opensea_api_key = "d7bc517c25894772ae915ef729c8a443"
@@ -691,7 +691,8 @@ def sales_graph():
         "volume_no_outlier": img_vol_no_outlier_base64
     })
 
-
+'''
 if __name__ == '__main__':
-    socketio.run(app, port=8080, debug=False, allow_unsafe_werkzeug=True) 
+    socketio.run(app, host='0.0.0.0', port=8080, debug=False) 
     # starts the Flask app and enables WebSocket support through the Flask-SocketIO extension
+'''

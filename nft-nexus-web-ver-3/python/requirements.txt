@@ -12,3 +12,5 @@ pytest
 pytest-flask
 pytest-mock 
 requests-mock
+eventlet
+gunicorn
