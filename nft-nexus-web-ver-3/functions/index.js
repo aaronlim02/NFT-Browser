@@ -20,6 +20,7 @@ const authenticateToken = require("./middleware/auth");
 const winston = require("winston");
 const admin = require('firebase-admin');
 const fs = require('fs');
+const { Database } = require('@sqlitecloud/drivers');
 
 // Load the service account key (using dotenv)
 
@@ -29,7 +30,7 @@ admin.initializeApp({
   credential: admin.credential.cert(serviceAccount)
 });
 
-const db = admin.firestore();
+//const db = admin.firestore();
 
 /*
 // Create a new SQLite database connection
@@ -41,6 +42,8 @@ const db = new sqlite3.Database(dbPath, sqlite3.OPEN_READWRITE | sqlite3.OPEN_CR
   }
 });
 */
+const db = new Database('sqlitecloud://cqjrg3d9ik.sqlite.cloud:8860?apikey=zabyXKNXskraNAGE2Af86sowyOyHGz76mym0lMCyRTo')
+db.exec('USE DATABASE database.sqlite;');
 
 // Configure Winston logger + test
 const logger = winston.createLogger({
@@ -49,7 +52,7 @@ const logger = winston.createLogger({
     new winston.transports.File({filename: "logfile.log"}),
   ],
 });
-logger.info("hello world!");
+logger.info("hello world! this is v3");
 
 const app = express();
 
@@ -57,7 +60,8 @@ const app = express();
 app.use(cors({
   origin: 'https://nft-nexus-5e707.web.app', // Specify your frontend domain
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Allow methods
-  allowedHeaders: ['Content-Type', 'Authorization'] // Allow headers
+  allowedHeaders: ['Content-Type', 'Authorization'], // Allow headers
+  credentials: true
 }));
 // Handle preflight requests
 app.options('*', cors());
@@ -66,185 +70,544 @@ app.use(express.json());
 
 const jwtSecretKey = process.env.JWT_SECRET;
 
-/*
-rant:
-
-i spent entire days debugging the issue:
-
-Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at https://us-central1-nft-nexus-5e707.cloudfunctions.net/api/login. (Reason: CORS header ‘Access-Control-Allow-Origin’ missing). Status code: 403.
-
-Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at https://us-central1-nft-nexus-5e707.cloudfunctions.net/api/login. (Reason: CORS request did not succeed). Status code: (null).
-
-i have tried:
-
-1. checking the urls
-2. const express = require("express");
-3. const cors = require("cors");
-4. app.use(cors({
-  origin: 'https://nft-nexus-5e707.web.app', // Specify the frontend domain
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Allow methods
-  allowedHeaders: ['Content-Type', 'Authorization'] // Allow headers
-}));
-5. app.options('*', cors());
-6. app.use(express.json());
-7. using curl to test the server
-8. manually adding the headers in each of the endpoints
-9. checking the network tab in inspect 
-10. rebuilding this function over and over
-11. Many more that ive done but probably forgot to mention here
-
-however the CORS header ‘Access-Control-Allow-Origin’ is still missing when i check inspect>network everytime
-
-The measures i taken should put the mentioned headers in the response headers but it doesnt.
-
-at this point im very confused and exhausted
-
-i guess this app won't have a login feature and consequently an account feature
-
-there are still a few features that are still accessible without login, so please evaluate those
-
-at this point i give up already
-*/
-
-// Register
-app.post("/api/register", async (req, res) => {
-
+app.post('/register', async (req, res) => {
   const { username, password } = req.body;
   const hashedPassword = await bcryptjs.hash(password, 10);
 
   try {
     // Check if the username already exists
-    const userDoc = await db.collection('users').doc(username).get();
-    if (userDoc.exists) {
-      return res.status(409).json({ error: "User already exists" });
-    }
+    db.get('SELECT * FROM users WHERE username = ?', [username], (err, row) => {
+      if (err) {
+        console.error(err.message);
+        return res.status(500).json({ error: err.message });
+      }
 
-    // Insert the new user
-    await db.collection('users').doc(username).set({
-      password: hashedPassword,
-      // Add other fields as needed
+      if (row) {
+        // Username already exists
+        return res.status(409).json({ error: 'User already exists' });
+      }
+
+      // Insert the new user
+      const sql = 'INSERT INTO users (username, password) VALUES (?, ?)';
+      const params = [username, hashedPassword];
+
+      db.run(sql, params, function(err) {
+        if (err) {
+          console.error(err.message);
+          return res.status(500).json({ error: err.message });
+        }
+
+        // Get the inserted user
+        db.get('SELECT * FROM users WHERE id = ?', [this.lastID], (err, user) => {
+          if (err) {
+            console.error(err.message);
+            return res.status(500).json({ error: err.message });
+          }
+          res.status(201).json(user);
+        });
+      });
     });
-
-    res.status(201).json({ message: "User registered successfully" });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// Login
-app.post("/api/login", async (req, res) => {
-
+app.post('/login', async (req, res) => {
   const { username, password } = req.body;
   try {
-    const userDoc = await db.collection('users').doc(username).get();
-    if (!userDoc.exists) {
-      return res.status(401).json({ error: "Invalid credentials" });
-    }
+    db.get('SELECT * FROM users WHERE username = ?', [username], async (err, user) => {
+      if (err) {
+        console.error(err.message);
+        return res.status(500).json({ error: err.message });
+      }
 
-    const isMatch = await bcryptjs.compare(password, userDoc.data().password);
-    if (!isMatch) {
-      return res.status(401).json({ error: "Invalid credentials" });
-    }
+      if (!user) {
+        return res.status(401).json({ error: 'Invalid credentials' });
+      }
 
-    const token = jwt.sign({ userId: username }, jwtSecretKey, { expiresIn: "3h" });
-    res.json({ token });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
+      const isMatch = await bcryptjs.compare(password, user.password);
+      if (!isMatch) {
+        return res.status(401).json({ error: 'Invalid credentials' });
+      }
 
-// Delete User
-app.delete("/delete-user", authenticateToken, async (req, res) => {
-  const userId = req.user.userId;
-
-  try {
-    await db.collection('users').doc(userId).delete();
-    res.status(200).json({ success: true });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// Retrieve Account
-app.get("/api/account", authenticateToken, async (req, res) => {
-  const userId = req.user.userId;
-
-  try {
-    const userDoc = await db.collection('users').doc(userId).get();
-    if (!userDoc.exists) {
-      return res.status(404).json({ error: "User not found" });
-    }
-
-    const userData = userDoc.data();
-    const settingsDoc = await db.collection('settings').doc(userId).get();
-    const settingsData = settingsDoc.exists ? settingsDoc.data() : {};
-
-    res.status(200).json({
-      username: userData.username,
-      address: settingsData['wallet-address'],
-      lightDarkMode: settingsData['light-dark-mode'] || 'light' // Default to 'light' if not found
+      const token = jwt.sign({ userId: user.id }, jwtSecretKey, { expiresIn: '3h' });
+      res.json({ token });
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// Update Personal Details
+app.delete('/delete-user', authenticateToken, async (req, res) => {
+  const userId = req.user.userId; // Assuming userId is set in the authenticateToken middleware
+
+  try {
+    // Delete the user from the database
+    db.run('DELETE FROM users WHERE id = ?', [userId], function (err) {
+      if (err) {
+        return res.status(500).json({ error: err.message });
+      }
+      
+      // Confirm deletion
+      if (this.changes === 0) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      return res.status(200).json({ success: true });
+    });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/process-data', authenticateToken, async (req, res) => {
+  try {
+    const data = req.body;
+    // Make a POST request to the Flask app
+    const response = await axios.post('http://localhost:5001/process', data);
+    res.json(response.data);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to process data' });
+  }
+});
+
+// retrieve account stuff
+app.get('/api/account', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userId; // id in users
+    const userQuery = 'SELECT * FROM users WHERE id = ?';
+    const walletQuery = 'SELECT * FROM settings WHERE user_id = ? AND setting_key = "wallet-address"';
+    const themeQuery = 'SELECT * FROM settings WHERE user_id = ? AND setting_key = "light-dark-mode"';
+
+    const getUser = () => new Promise((resolve, reject) => {
+      db.get(userQuery, [userId], (err, row) => {
+        if (err) reject(err);
+        resolve(row);
+      });
+    });
+
+    const getWallet = () => new Promise((resolve, reject) => {
+      db.get(walletQuery, [userId], (err, row) => {
+        if (err) reject(err);
+        resolve(row ? row.setting_value : null);
+      });
+    });
+
+    const getTheme = () => new Promise((resolve, reject) => {
+      db.get(themeQuery, [userId], (err, row) => {
+        if (err) reject(err);
+        resolve(row ? row.setting_value : 'light');
+      });
+    });
+
+    const [user, address, lightDarkMode] = await Promise.all([getUser(), getWallet(), getTheme()]);
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.status(200).json({ username: user.username, address, lightDarkMode });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.post('/settings/personal-details', authenticateToken, async (req, res) => {
   const { yourWalletAddress, lightDarkMode } = req.body;
   const userId = req.user.userId;
 
-  try {
-    await db.collection('settings').doc(userId).set({
-      'wallet-address': yourWalletAddress,
-      'light-dark-mode': lightDarkMode
-    }, { merge: true }); // Use merge to update existing fields
+  const updateOrInsertSetting = (key, value) => new Promise((resolve, reject) => {
+    db.get('SELECT * FROM settings WHERE user_id = ? AND setting_key = ?', [userId, key], (err, row) => {
+      if (err) return reject(err);
 
-    res.status(200).json({
-      walletAddress: yourWalletAddress,
-      lightDarkMode: lightDarkMode
+      if (value.length == 0) {
+        return resolve();
+      }
+
+      if (row) {
+        db.run('UPDATE settings SET setting_value = ? WHERE user_id = ? AND setting_key = ?', [value, userId, key], function (err) {
+          if (err) reject(err);
+          resolve();
+        });
+      } else {
+        db.run('INSERT INTO settings (user_id, setting_key, setting_value) VALUES (?, ?, ?)', [userId, key, value], function (err) {
+          if (err) reject(err);
+          resolve();
+        });
+      }
     });
+  });
+
+  try {
+    await Promise.all([
+      updateOrInsertSetting('wallet-address', yourWalletAddress),
+      updateOrInsertSetting('light-dark-mode', lightDarkMode)
+    ]);
+
+    const fetchUpdatedSettings = () => new Promise((resolve, reject) => {
+      db.all('SELECT * FROM settings WHERE user_id = ? AND setting_key IN ("wallet-address", "light-dark-mode")', [userId], (err, rows) => {
+        if (err) reject(err);
+        resolve(rows);
+      });
+    });
+
+    const updatedRows = await fetchUpdatedSettings();
+    const response = {
+      walletAddress: null,
+      lightDarkMode: null
+    };
+
+    updatedRows.forEach(row => {
+      if (row.setting_key === 'wallet-address') {
+        response.walletAddress = row.setting_value;
+      } else if (row.setting_key === 'light-dark-mode') {
+        response.lightDarkMode = row.setting_value;
+      }
+    });
+
+    res.status(200).json(response);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// Change Password
 app.post('/settings/change-password', authenticateToken, async (req, res) => {
   const { newPassword } = req.body;
   const userId = req.user.userId;
 
   try {
     const hashedPassword = await bcryptjs.hash(newPassword, 10);
-    await db.collection('users').doc(userId).update({ password: hashedPassword });
 
-    res.status(200).json({ message: 'Password updated successfully' });
+    db.run('UPDATE users SET password = ? WHERE id = ?', [hashedPassword, userId], function(err) {
+      if (err) {
+        return res.status(500).json({ error: 'Server error, please try again later' });
+      }
+      return res.status(200).json({ message: 'Password updated successfully' });
+    });
   } catch (error) {
-    res.status(500).json({ error: 'Server error, please try again later' });
+    return res.status(500).json({ error: 'Server error, please try again later' });
   }
 });
 
 // watchlist //
 // add to watchlist
+app.post('/watchlist/add_from_nft_browser', authenticateToken, async (req, res) => {
+  const userId = req.user.userId; // Assuming userId is set in the authenticateToken middleware
+  const { name, slug } = req.body; // Assuming collection is sent in the request body
 
-// retrieve / edit / delete watchlist for account
+  if (!userId) {
+    return res.status(400).json({ error: "User ID is required. Please login first." });
+  } else if (!slug) {
+    return res.status(400).json({ error: "Must select a collection." });
+  }
 
+  try {
+    // Check if the collection already exists in the user's watchlist
+    db.get('SELECT * FROM watchlist WHERE user_id = ? AND collection_slug = ?', [userId, slug], (err, row) => {
+      if (err) {
+        throw err;
+      }
 
-// notifications //
+      if (row) {
+        // Collection already exists, return "Conflict" status code
+        return res.status(409).json({ error: "Collection already in watchlist." });
+      } else {
+        // Collection does not exist, insert it
+        db.run('INSERT INTO watchlist (user_id, collection_slug, collection_name, set_price) VALUES (?, ?, ?, ?)', [userId, slug, name, null], function (err) {
+          if (err) {
+            throw err;
+          }
 
-// retrieve
+          // Fetch the inserted record
+          db.get('SELECT * FROM watchlist WHERE user_id = ? AND collection_slug = ? AND collection_name = ?', [userId, slug, name], (err, insertedRow) => {
+            if (err) {
+              throw err;
+            }
+            return res.status(201).json(insertedRow);
+          });
+        });
+      }
+    });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
 
-// delete
+// retrieve watchlist for account
+app.get('/watchlist/retrieve_from_account', authenticateToken, async (req, res) => {
+  const userId = req.user.userId; // Assuming userId is set in the authenticateToken middleware
 
+  try {
+    // Fetch all items belonging to the user
+    db.all('SELECT * FROM watchlist WHERE user_id = ?', [userId], (err, rows) => {
+      if (err) {
+        return res.status(500).json({ error: err.message });
+      }
+      return res.status(200).json(rows);
+    });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
 
-// delete all
+app.delete('/watchlist/delete', authenticateToken, (req, res) => {
+  const { id } = req.body;
+  const userId = req.user.userId;
 
+  db.run('DELETE FROM watchlist WHERE id = ? AND user_id = ?', [id, userId], function(err) {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    return res.status(200).json({ success: true, id });
+  });
+});
+
+app.put('/watchlist/edit', authenticateToken, (req, res) => {
+  const { id, set_price } = req.body;
+  const userId = req.user.userId;
+
+  db.run('UPDATE watchlist SET set_price = ? WHERE id = ? AND user_id = ?', [set_price, id, userId], function(err) {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    db.get(
+      'SELECT * FROM watchlist WHERE id = ? AND user_id = ?',
+      [id, userId],
+      (err, row) => {
+        if (err) {
+          return res.status(500).json({ error: err.message });
+        }
+        return res.status(200).json(row);
+      }
+    );
+  });
+});
+
+// for testing only
+app.post('/notifications/add', authenticateToken, (req, res) => {
+  const { collection_slug, collection_name, floor_price, createdAt, updatedAt } = req.body;
+  const userId = req.user.userId;
+
+  if (!collection_name) {
+    return res.status(400).json({ error: 'Notification message is required' });
+  }
+
+  db.run(
+    'INSERT INTO notifications (user_id, collection_slug, collection_name, floor_price, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?)',
+    [userId, collection_slug, collection_name, floor_price, createdAt, updatedAt],
+    function (err) {
+      if (err) {
+        return res.status(500).json({ error: err.message });
+      }
+
+      // Fetch the inserted notification
+      db.get(
+        'SELECT * FROM notifications WHERE id = ?',
+        [this.lastID],
+        (err, row) => {
+          if (err) {
+            return res.status(500).json({ error: err.message });
+          }
+          return res.status(201).json(row);
+        }
+      );
+    }
+  );
+});
+
+app.get('/notifications/retrieve_from_account', authenticateToken, async (req, res) => {
+  const userId = req.user.userId; // Assuming userId is set in the authenticateToken middleware
+
+  try {
+    // Fetch all items belonging to the user
+    db.all('SELECT * FROM notifications WHERE user_id = ?', [userId], (err, rows) => {
+      if (err) {
+        return res.status(500).json({ error: err.message });
+      }
+      return res.status(200).json(rows);
+    });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete('/notifications/delete', authenticateToken, (req, res) => {
+  const { id } = req.body;
+  const userId = req.user.userId;
+
+  db.run('DELETE FROM notifications WHERE id = ? AND user_id = ?', [id, userId], function(err) {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    return res.status(200).json({ success: true, id });
+  });
+});
+
+app.delete('/notifications/delete-all', authenticateToken, (req, res) => {
+  const userId = req.user.userId;
+
+  db.run('DELETE FROM notifications WHERE user_id = ?', [userId], function(err) {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    return res.status(200).json({ success: true });
+  });
+});
 
 // galleries feature //
-// crud galleries for account
+// retrieve galleries for account
+app.get('/galleries/retrieve_from_account', authenticateToken, async (req, res) => {
+  const userId = req.user.userId; // Assuming userId is set in the authenticateToken middleware
 
+  try {
+    // Fetch all items belonging to the user
+    db.all('SELECT * FROM galleries WHERE user_id = ?', [userId], (err, rows) => {
+      if (err) {
+        return res.status(500).json({ error: err.message });
+      }
+      return res.status(200).json(rows);
+    });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
 
-// gallery view add delete
+app.post('/galleries/add', authenticateToken, async (req, res) => {
+  const userId = req.user.userId; // Assuming userId is set in the authenticateToken middleware
+  const { name, description } = req.body; // Assuming collection is sent in the request body
+
+  try {
+    // Check if the gallery already exists in the user's watchlist
+    db.get('SELECT * FROM galleries WHERE name = ? AND user_id = ?', [name, userId], (err, row) => {
+      if (err) {
+        throw err;
+      }
+
+      if (row) {
+        // Collection already exists, return "Conflict" status code
+        return res.status(409).json({ error: "Gallery already exists!" });
+      } else {
+        // Collection does not exist, insert it
+        db.run('INSERT INTO galleries (user_id, name, description) VALUES (?, ?, ?)', [userId, name, description], function (err) {
+          if (err) {
+            throw err;
+          }
+
+          // Fetch the inserted record
+          db.get('SELECT * FROM galleries WHERE user_id = ? AND name = ?', [userId, name], (err, insertedRow) => {
+            if (err) {
+              throw err;
+            }
+            return res.status(201).json(insertedRow);
+          });
+        });
+      }
+    });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+app.put('/galleries/edit', authenticateToken, (req, res) => {
+  const { name, description } = req.body;
+  const id = req.query.galleryId;
+  const userId = req.user.userId;
+
+  db.run('UPDATE galleries SET name = ?, description = ? WHERE id = ? AND user_id = ?', [name, description, id, userId], function(err) {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    db.get(
+      'SELECT * FROM galleries WHERE id = ? AND user_id = ?',
+      [id, userId],
+      (err, row) => {
+        if (err) {
+          return res.status(500).json({ error: err.message });
+        }
+        return res.status(200).json(row);
+      }
+    );
+  });
+});
+
+app.delete('/galleries/delete', authenticateToken, (req, res) => {
+  const id = req.query.galleryId;
+  const userId = req.user.userId;
+
+  db.run('DELETE FROM galleries WHERE id = ? AND user_id = ?', [id, userId], function(err) {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    return res.status(200).json({ success: true, id });
+  });
+});
+
+// gallery
+app.get('/gallery-items/view', authenticateToken, async (req, res) => {
+  const userId = req.user.userId; // Assuming userId is set in the authenticateToken middleware
+  const galleryId = req.query.galleryId;
+
+  try {
+    // Fetch all items belonging to the user
+    
+    db.all('SELECT * FROM gallery_items WHERE gallery_id = ?', [galleryId], (err, rows) => {
+      if (err) {
+        return res.status(500).json({ error: err.message});
+      }
+      return res.status(200).json(rows);
+    });
+  } catch (err) {
+    return res.status(501).json({ error: err.message});
+  }
+});
+
+app.post('/gallery-items/add', authenticateToken, async (req, res) => {
+  const userId = req.user.userId; // Assuming userId is set in the authenticateToken middleware
+  const { gallery_id, contract_addr, token_id, collection_name } = req.body; // Assuming collection is sent in the request body
+
+  try {
+    // Check if the item already exists in the user's watchlist
+    db.get('SELECT * FROM gallery_items WHERE gallery_id = ? AND contract_addr = ? AND token_id = ?', [gallery_id, contract_addr, token_id], (err, row) => {
+      if (err) {
+        throw err;
+      }
+
+      if (row) {
+        // Collection already exists, return "Conflict" status code
+        return res.status(409).json({ error: "Item already exists!" });
+      } else {
+        // Collection does not exist, insert it
+        db.run('INSERT INTO gallery_items (gallery_id, contract_addr, token_id, collection_name) VALUES (?, ?, ?, ?)', [gallery_id, contract_addr, token_id, collection_name], function (err) {
+          if (err) {
+            throw err;
+          }
+
+          // Fetch the inserted record
+          db.get('SELECT * FROM gallery_items WHERE gallery_id = ? AND contract_addr = ? AND token_id = ?', [gallery_id, contract_addr, token_id], (err, insertedRow) => {
+            if (err) {
+              throw err;
+            }
+            return res.status(201).json(insertedRow);
+          });
+        });
+      }
+    });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete('/gallery-items/delete', authenticateToken, (req, res) => {
+  const id = req.query.itemId;
+  const userId = req.user.userId;
+
+  db.run('DELETE FROM gallery_items WHERE id = ?', [id], function(err) {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    return res.status(200).json({ success: true, id });
+  });
+});
 
 
 // Export the Express app as a Cloud Function
