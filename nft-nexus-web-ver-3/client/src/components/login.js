@@ -15,7 +15,7 @@ const Login = () => {
       alert('Please enter both username and password');
     }
     try {
-      const response = await axios.post('http://localhost:5000/login', { username, password });
+      const response = await axios.post('https://us-central1-nft-nexus-5e707.cloudfunctions.net/api/login', { username, password });
       login(response.data.token); // Save the token
       alert('Login successful');
       navigate('/account', { state: { username } });
@@ -54,7 +54,7 @@ const Login = () => {
             type="text"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
-            placeholder="Password"
+            placeholder="Username"
             required
           />
         </div>
@@ -64,7 +64,7 @@ const Login = () => {
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="Username"
+            placeholder="Password"
             required
           />
         </div>

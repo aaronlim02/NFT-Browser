@@ -8,7 +8,7 @@ const Register = () => {
   const handleRegister = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:5000/register', { username, password });
+      const response = await axios.post('https://us-central1-nft-nexus-5e707.cloudfunctions.net/api/register', { username, password });
       alert('Registration successful, please proceed to login');
     } catch (error) {
       if (error.response) {
@@ -19,7 +19,7 @@ const Register = () => {
           alert('Registration failed, please try again later.');
         }
       } else {
-        alert('The backend server is not running. Please ensure it is running.');
+        alert('The server is not responding. please try again later.');
       }
     }
   };
