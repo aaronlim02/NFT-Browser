@@ -26,7 +26,7 @@ socketio = SocketIO(app, cors_allowed_origins="*")
 CORS(app, origins=["*"], supports_credentials=True)
 load_dotenv()
 
-opensea_api_key = "d7bc517c25894772ae915ef729c8a443"
+opensea_api_key = "0a9640c8b4d3426292b6c0f87897ecd5"
 alchemy_api_key = "Fn6XgY7SlhdqnbN09xv5QFenmRxaK0Ej"
 #database_url = r"../database/database.sqlite"
 
