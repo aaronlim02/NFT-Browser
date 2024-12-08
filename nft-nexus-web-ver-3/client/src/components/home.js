@@ -70,17 +70,15 @@ const Home = () => {
     return (
       <main>
         <h1 align="center">NFT Nexus</h1>
-        <p align="center">Find NFTs easily using this intuitive website</p>
+        <p align="center">Find NFTs easily using this intuitive website.</p>
         <div class="python-screen-of-death">
           <div class="psod-message">
             <h2>PYTHON SCREEN OF DEATH :(</h2>
-            <p>If you are seeing this screen, it means that the Python server could not run properly. Python is required for most of the features in this application to function.</p>
+            <p>If you are seeing this screen, it means that the Python server could not run properly. Many features in this application won't be able to function.</p>
             <h3>Issue:</h3>
-            {status === "501" ? <p>Missing/Invalid Python installation / Can't connect to server</p> : <p>Internal error while trying to run Python program</p>}
+            <p>Internal error while trying to run Python program</p>
             <h3>What to do:</h3>
-            {status === "501" ? 
-            <p>Please try again later.</p>
-            : <p>It seems that you have already installed Python, however an internal server error has occured. Please try again later. If issues persist, you might want to try <a class="psod-a" href="https://www.python.org/downloads/">reinstalling Python</a> and this application.</p>}
+            <p>An internal server error has occured. Please try again later.</p>
           </div>
         </div>
         

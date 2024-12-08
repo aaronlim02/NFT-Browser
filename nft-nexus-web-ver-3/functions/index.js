@@ -52,7 +52,7 @@ const logger = winston.createLogger({
     new winston.transports.File({filename: "logfile.log"}),
   ],
 });
-logger.info("hello world! this is v3");
+logger.info("hello world! this is v4");
 
 const app = express();
 
